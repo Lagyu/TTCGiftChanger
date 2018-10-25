@@ -1,0 +1,52 @@
+{% extends "giftchanger/_base.html" %}
+
+{% block title %}イベントを登録{% endblock %}
+{% block main %}
+    <form action="{% url 'giftchanger:event_register_post' %}" method="post">
+        {% csrf_token %}
+
+        <div class="form-label-group">
+            <label for="event_name">イベント名(参加者ログインの際に使います。)</label>
+            <input id="event_name" name="event_name" class="form-control" placeholder="イベント名" required="" autofocus="" type="text">
+        </div>
+
+        <div class="form-label-group">
+            <label for="event_date">イベント開催日(参加者ログインの際に使います。)</label>
+            <input id="event_date" name="event_date" class="form-control" placeholder="イベント開催日" required="" type="date">
+        </div>
+
+        <div class="form-label-group">
+            <label for="email">メールアドレス(ログイン用URLを送信します。)</label>
+            <input id="email" name="email" class="form-control" placeholder="メールアドレス" required="" type="email">
+        </div>
+
+        <div class="form-label-group">
+            <label for="number_of_gifts">ギフトの数</label>
+            <input id="number_of_gifts" name="number_of_gifts" class="form-control" placeholder="ギフトの数" required="" value="8" type="number">
+        </div>
+
+        <div class="form-label-group">
+            <label for="password">管理者用パスワード（編集の際に使用します。）</label>
+            <input id="password" name="password" class="form-control" placeholder="管理パスワード" type="text">
+        </div>
+
+        <label for="event_name">名前の表示（順位選択時）</label>
+        <label><input type="radio" name="show_name_before" id="show_name_before" value="false" checked>表示しない</label>
+        <label><input type="radio" name="show_name_before" id="show_name_before" value="true">表示する</label>
+        <br>
+
+        <label for="event_name">名前の表示（マッチング後）</label>
+        <label><input type="radio" name="show_name_after" id="show_name_after" value="false">表示しない</label>
+        <label><input type="radio" name="show_name_after" id="show_name_after" value="true" checked>表示する</label>
+        <br>
+
+        <label for="event_name">写真投稿：</label>
+        <label><input type="radio" name="allow_picture" id="allow_picture" value="false" checked>許可しない</label>
+        <label><input type="radio" name="allow_picture" id="allow_picture" value="true">許可する</label>
+        <label><input type="radio" name="allow_picture" id="allow_picture" value="always">強制</label>
+        <br>
+
+        <button class="btn btn-primary">送信してイベントを作成</button>
+    </form>
+
+{% endblock %}

@@ -1,0 +1,299 @@
+{% extends "giftchanger/_base.html" %}
+
+{% block title %}イベントを登録{% endblock %}
+{% block main %}
+    <h2 class="col-12">選好順位入力画面</h2>
+
+    <div class="table-responsive">
+        <table class="table">
+            <caption>選択済みのプレゼント表示欄</caption>
+            <thead>
+            <tr>
+                <th scope="col" class="text-center">順位</th>
+                <th scope="col" class="text-center">id</th>
+                <th scope="col" class="col-6 text-center">タイトル</th>
+                <th scope="col" class="col-2 text-center">所有者</th>
+                <th scope="col" class="col-1 text-center">1つ上へ</th>
+                <th scope="col" class="col-2 text-center">n位の後へ</th>
+                <th scope="col" class="col-1 text-center">1つ下へ</th>
+            </tr>
+            </thead>
+            <tbody id="selected_tbody">
+
+            </tbody>
+        </table>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <caption>未選択のプレゼント表示欄</caption>
+            <thead>
+            <tr>
+                <th scope="col" class="text-center">id</th>
+                <th scope="col" class="col-6 text-center">タイトル</th>
+                <th scope="col" class="col-2 text-center">所有者</th>
+                <th scope="col" class="col-1 text-center">1位へ</th>
+                <th scope="col" class="col-2 text-center">n位の後へ</th>
+                <th scope="col" class="col-1 text-center">最下位へ</th>
+            </tr>
+            </thead>
+            <tbody id="not_selected_tbody">
+
+            </tbody>
+        </table>
+    </div>
+    <script>
+        const objects =
+        {{ gifts_json|safe }}{# Not escape for the data will only be used in the client. #}
+        for (let i = 0; i < objects.length; i++) {
+            const obj = objects[i];
+            localStorage.setItem(obj.key, JSON.stringify(obj.value));
+        }
+        {# console.log(JSON.parse(localStorage.getItem(1))) #}
+    </script>
+    <script>
+
+        class setSelscted {
+            updateCookie(data) {
+                document.cookie = "selected_preference_list_{{ event_id|safe }}=" + data;
+            }
+        }
+
+        class setNotSelected {
+            updateCookie(data) {
+                document.cookie = "not_selected_preference_list_{{ event_id|safe }}=" + data;
+            }
+        }
+
+        class selected_data {
+            constructor() {
+                this.observers = [];
+                this.data = JSON.parse(document.cookie.replace(/(?:(?:^|.*;\s*)selected_preference_list_{{ event_id|safe }}\s*\=\s*([^;]*).*$)|^.*$/, "$1").replace(/\\054/g, ",").replace(/"/g, ""));
+            }
+
+            subscribe(f) {
+                this.observers.push(f)
+            }
+
+            unsubscribe(f) {
+                this.observers = this.observers.filter(subscriber => subscriber !== f);
+            }
+
+            notify(value) {
+                this.observers.forEach(observer => observer.updateCookie(value));
+            }
+
+            get data() {
+                return this._data;
+            }
+
+
+            set data(value) {
+                this._data = value;
+                this.notify(JSON.stringify(value));
+                this.refresh()
+            }
+
+            refresh() {
+                const element = document.getElementById("selected_tbody");
+                while (element.firstChild) {
+                    element.removeChild(element.firstChild);
+                }
+                for (let i = 0; i < this.data.length; i++) {
+                    const gift_id = this.data[i];
+                    const gift_tr = document.createElement("tr");
+                    const gift_data_dict = JSON.parse(localStorage.getItem(gift_id));
+
+
+                    const td_rank = document.createElement("td");
+                    const rank_text = document.createTextNode(i+1);
+                    td_rank.appendChild(rank_text);
+                    gift_tr.appendChild(td_rank);
+
+                    const td_gift_id = document.createElement("td");
+                    const gift_id_text = document.createTextNode(gift_id);
+                    td_gift_id.appendChild(gift_id_text);
+                    gift_tr.appendChild(td_gift_id);
+
+                    const td_title = document.createElement("td");
+                    const title_text = document.createTextNode(gift_data_dict["title"]);
+                    td_title.appendChild(title_text);
+                    gift_tr.appendChild(td_title);
+
+                    const td_name = document.createElement("td");
+                    const name_text = document.createTextNode({% if show_name %}gift_data_dict["name"]
+                        {% else %}''{% endif %}
+                );
+                    td_name.appendChild(name_text);
+                    gift_tr.appendChild(td_name);
+
+
+                        const td_go_1st = document.createElement("td");
+                        if (i !== 0) {
+                        const go_1st_text = document.createTextNode("1つ上へ");
+                        const go_1st_button = document.createElement("button");
+                        go_1st_button.setAttribute("class", "btn btn-primary");
+                        go_1st_button.appendChild(go_1st_text);
+                        td_go_1st.appendChild(go_1st_button);
+
+                    }
+                        gift_tr.appendChild(td_go_1st);
+
+                    const td_go_after_n = document.createElement("td");
+                    const div_group = document.createElement("div");
+                    div_group.setAttribute("class", "input-group");
+
+                    const span_btn = document.createElement("span");
+                    span_btn.setAttribute("class", "input-group-btn");
+
+                    const input_go_after_n = document.createElement("input");
+                    input_go_after_n.setAttribute("type", "number");
+                    input_go_after_n.setAttribute("class", "form-control input-sm");
+                    input_go_after_n.setAttribute("min", "1");
+                    input_go_after_n.setAttribute("max", parseInt({{ number_of_gifts }}) - this.data.length);
+
+                    const go_after_n_text = document.createTextNode("の後へ");
+                    const go_after_n_button = document.createElement("button");
+                    go_after_n_button.setAttribute("class", "btn btn-primary");
+                    go_after_n_button.appendChild(go_after_n_text);
+                    span_btn.appendChild(go_after_n_button);
+
+                    div_group.appendChild(input_go_after_n);
+                    div_group.appendChild(span_btn);
+
+                    td_go_after_n.appendChild(div_group);
+                    gift_tr.appendChild(td_go_after_n);
+
+                    const td_go_last = document.createElement("td");
+                    if (i !== this.data.length - 1) {
+                        const go_last_text = document.createTextNode("1つ下へ");
+                        const go_last_button = document.createElement("button");
+                        go_last_button.setAttribute("class", "btn btn-secondary");
+                        go_last_button.appendChild(go_last_text);
+                        td_go_last.appendChild(go_last_button);
+                        gift_tr.appendChild(td_go_last);
+                    }
+                    element.appendChild(gift_tr);
+                }
+            }
+
+        }
+
+        class not_selected_data {
+            constructor() {
+                this.observers = [];
+                this.data = JSON.parse(document.cookie.replace(/(?:(?:^|.*;\s*)not_selected_preference_list_{{ event_id|safe }}\s*\=\s*([^;]*).*$)|^.*$/, "$1").replace(/\\054/g, ",").replace(/"/g, ""));
+            }
+
+            subscribe(f) {
+                this.observers.push(f)
+            }
+
+            unsubscribe(f) {
+                this.observers = this.observers.filter(subscriber => subscriber !== f);
+            }
+
+            notify(value) {
+                this.observers.forEach(observer => observer.updateCookie(value));
+            }
+
+            get data() {
+                return this._data;
+            }
+
+            set data(value) {
+                value = value.sort((a, b) => a - b);
+                this._data = value;
+                this.notify(JSON.stringify(value));
+                this.refresh()
+            }
+
+            refresh() {
+                const element = document.getElementById("not_selected_tbody");
+                while (element.firstChild) {
+                    element.removeChild(element.firstChild);
+                }
+                for (let i = 0; i < this.data.length; i++) {
+                    const gift_id = this.data[i];
+                    const gift_tr = document.createElement("tr");
+                    const gift_data_dict = JSON.parse(localStorage.getItem(gift_id));
+
+                    const td_gift_id = document.createElement("td");
+                    const gift_id_text = document.createTextNode(gift_id);
+                    td_gift_id.appendChild(gift_id_text);
+                    gift_tr.appendChild(td_gift_id);
+
+                    const td_title = document.createElement("td");
+                    const title_text = document.createTextNode(gift_data_dict["title"]);
+                    td_title.appendChild(title_text);
+                    gift_tr.appendChild(td_title);
+
+                    const td_name = document.createElement("td");
+                    const name_text = document.createTextNode({% if show_name %}gift_data_dict["name"]
+                        {% else %}''{% endif %}
+                );
+                    td_name.appendChild(name_text);
+                    gift_tr.appendChild(td_name);
+
+                    const td_go_1st = document.createElement("td");
+                    const go_1st_text = document.createTextNode("1位へ");
+                    const go_1st_button = document.createElement("button");
+                    go_1st_button.setAttribute("class", "btn btn-primary");
+                    go_1st_button.appendChild(go_1st_text);
+                    td_go_1st.appendChild(go_1st_button);
+                    gift_tr.appendChild(td_go_1st);
+
+                    const td_go_after_n = document.createElement("td");
+                    const div_group = document.createElement("div");
+                    div_group.setAttribute("class", "input-group");
+
+                    const span_btn = document.createElement("span");
+                    span_btn.setAttribute("class", "input-group-btn");
+
+                    const input_go_after_n = document.createElement("input");
+                    input_go_after_n.setAttribute("type", "number");
+                    input_go_after_n.setAttribute("class", "form-control input-sm");
+                    input_go_after_n.setAttribute("min", "1");
+                    input_go_after_n.setAttribute("max", parseInt({{ number_of_gifts }}) - this.data.length);
+
+                    const go_after_n_text = document.createTextNode("の後へ");
+                    const go_after_n_button = document.createElement("button");
+                    go_after_n_button.setAttribute("class", "btn btn-primary");
+                    go_after_n_button.appendChild(go_after_n_text);
+                    span_btn.appendChild(go_after_n_button);
+
+                    div_group.appendChild(input_go_after_n);
+                    div_group.appendChild(span_btn);
+
+                    td_go_after_n.appendChild(div_group);
+                    gift_tr.appendChild(td_go_after_n);
+
+                    const td_go_last = document.createElement("td");
+                    const go_last_text = document.createTextNode("最下位へ");
+                    const go_last_button = document.createElement("button");
+                    go_last_button.setAttribute("class", "btn btn-secondary");
+                    go_last_button.appendChild(go_last_text);
+                    td_go_last.appendChild(go_last_button);
+                    gift_tr.appendChild(td_go_last);
+
+                    element.appendChild(gift_tr);
+                }
+            }
+
+        }
+
+        const selected_instance = new selected_data();
+        selected_instance.subscribe(new setSelscted());
+
+        const not_selected_instance = new not_selected_data();
+        not_selected_instance.subscribe(new setNotSelected());
+
+        console.log(selected_instance.data);
+        console.log(not_selected_instance.data);
+
+        selected_instance.data = [1, 2];
+        not_selected_instance.data = [3];
+
+
+    </script>
+
+{% endblock %}

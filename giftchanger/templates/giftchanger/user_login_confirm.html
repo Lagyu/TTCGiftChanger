@@ -1,0 +1,24 @@
+{% extends "giftchanger/_base.html" %}
+
+{% block title %}イベントを登録{% endblock %}
+{% block main %}
+    <h2 class="col-12">このイベントに参加者としてログインします。</h2>
+    <div class="col-12">イベント名: {{ event.event_name }}</div>
+    <div class="col-12">参加者数: {{ event.number_of_gifts }}人</div>
+    <br>
+    <div class="col-12">名前の表示(選択時): {% if event.show_name_before_match == True %}あり{% else %}なし{% endif %}</div>
+    <div class="col-12">名前の表示(マッチング後): {% if event.show_name_after_match == True %}あり{% else %}なし{% endif %}</div>
+    <br>
+    <form action="{% url 'giftchanger:create_user_post' event.event_id %}" method="post">
+        {% csrf_token %}
+        <div class="form-label-group">
+            <label for="user_name">あなたの名前</label>
+            <input id="user_name" name="user_name" class="form-control" placeholder="あなたの名前" required="" autofocus=""
+                   type="text">
+            <input id="event_id" name="event_id" value="{{ event.event_id }}" hidden>
+            <button class="btn btn-primary">ログイン</button>
+        </div>
+    </form>
+
+
+{% endblock %}

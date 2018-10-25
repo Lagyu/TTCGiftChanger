@@ -1,0 +1,10 @@
+{% extends "giftchanger/_base.html" %}
+
+{% block title %}イベントを登録{% endblock %}
+{% block main %}
+    <h2 class="col-12">登録完了！</h2>
+    <div class="col-12">url: {{ request.scheme }}://{{ request.get_host }}{% url "giftchanger:view_event" event.event_id %}</div>
+    <div class="col-12">プレゼントの個数: {{ event.number_of_gifts }}個</div>
+
+
+{% endblock %}

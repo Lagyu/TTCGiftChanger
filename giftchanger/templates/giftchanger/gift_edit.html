@@ -1,0 +1,21 @@
+{% extends "giftchanger/_base.html" %}
+
+{% block title %}イベントを登録{% endblock %}
+{% block main %}
+    <h2 class="col-12">プレゼント登録・編集画面</h2>
+    <form action="{% url 'giftchanger:edit_gift_post' gift.parent_event.event_id gift.id %}" method="post">
+        {% csrf_token %}
+        <div class="form-label-group">
+            <label for="gift_title">プレゼントのタイトル</label>
+            <input id="gift_title" name="gift_title" class="form-control" placeholder="プレゼントのタイトル" required=""
+                   autofocus="" value="{{ gift.gift_title }}" type="text">
+        </div>
+            <div class="form-label-group">
+            <label for="gift_description">プレゼントの詳細(1000文字まで)</label>
+                <textarea id="gift_description" name="gift_description" class="form-control" placeholder="プレゼントの詳細(1000文字まで)" rows="10" required></textarea>
+        </div>
+    <button class="btn btn-primary">保存して、選好入力画面へ</button>
+    </form>
+
+
+{% endblock %}

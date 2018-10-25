@@ -1,0 +1,14 @@
+{% extends "giftchanger/_base.html" %}
+
+{% block title %}メインページ{% endblock %}
+
+{% block main %}
+
+    <div class="mt-3 mx-aito">
+        <a href="{% url 'giftchanger:event_register_view' %}"><button class="btn btn-secondary m-1">交換を主催する</button></a>
+        <a href="{% url 'giftchanger:user_login' %}">
+        <button class="btn btn-primary m-1">交換に参加する</button>
+        </a>
+    </div>
+
+{% endblock %}

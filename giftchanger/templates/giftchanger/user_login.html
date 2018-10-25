@@ -1,0 +1,22 @@
+{% extends "giftchanger/_base.html" %}
+
+{% block title %}参加者ログイン{% endblock %}
+
+{% block main %}
+
+    <div class="mt-3 mx-aito">
+        <form action="{% url 'giftchanger:user_login_post' %}" method="post">
+            {% csrf_token %}
+            <label for="event_name">イベント名</label>
+            <input type="text" name="event_name" id="event_name">
+            <br>
+            <label for="event_date">イベント開催日</label>
+            <input type="date" name="event_date" id="event_date">
+            <br>
+            <button class="btn btn-primary">
+                ログイン
+            </button>
+        </form>
+    </div>
+
+{% endblock %}
