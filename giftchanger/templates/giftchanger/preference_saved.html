@@ -1,0 +1,13 @@
+{% extends "giftchanger/_base.html" %}
+{% block title %}保存完了{% endblock %}
+
+{% block main %}
+
+    <div>選好の保存が完了しました。</div>
+    <div>あなたの選好列：</div>
+    <input value="{{ gift.preference_list_str }}" readonly>
+
+    <div>
+    マッチング結果は、<a href="">こちら</a>から確認できます。</div>
+
+{% endblock %}

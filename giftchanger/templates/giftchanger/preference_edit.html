@@ -1,6 +1,6 @@
 {% extends "giftchanger/_base.html" %}
 
-{% block title %}イベントを登録{% endblock %}
+{% block title %}選好順位入力{% endblock %}
 {% block main %}
     <h2 class="col-12">選好順位入力画面</h2>
 
@@ -12,9 +12,10 @@
                 <th scope="col" class="text-center">順位</th>
                 <th scope="col" class="text-center">id</th>
                 <th scope="col" class="col-6 text-center">タイトル</th>
-                <th scope="col" class="col-2 text-center">所有者</th>
+
+                <th scope="col" class="col-2 text-center"{% if not show_name %} hidden{% endif %}>所有者</th>
                 <th scope="col" class="col-1 text-center">1つ上へ</th>
-                <th scope="col" class="col-2 text-center">n位の後へ</th>
+                <th scope="col" class="col-2 text-center">n位へ</th>
                 <th scope="col" class="col-1 text-center">1つ下へ</th>
             </tr>
             </thead>
@@ -29,11 +30,11 @@
             <thead>
             <tr>
                 <th scope="col" class="text-center">id</th>
-                <th scope="col" class="col-6 text-center">タイトル</th>
-                <th scope="col" class="col-2 text-center">所有者</th>
-                <th scope="col" class="col-1 text-center">1位へ</th>
-                <th scope="col" class="col-2 text-center">n位の後へ</th>
-                <th scope="col" class="col-1 text-center">最下位へ</th>
+                <th scope="col" class="col-sm-6 text-center">タイトル</th>
+                <th scope="col" class="col-sm-2 text-center"{% if not show_name %} hidden{% endif %}>所有者</th>
+                <th scope="col" class="col-sm-1 text-center">1位へ</th>
+                <th scope="col" class="col-sm-2 text-center">n位へ</th>
+                <th scope="col" class="col-sm-1 text-center">最下位へ</th>
             </tr>
             </thead>
             <tbody id="not_selected_tbody">
@@ -41,6 +42,15 @@
             </tbody>
         </table>
     </div>
+
+    <form onsubmit="return false;" id="save_form" method="post">
+    {% csrf_token %}
+    <nav class="navbar fixed-bottom navbar-expand-sm navbar-dark bg-dark">
+        <button class="btn btn-secondary col-sm-6 mx-1" id="save_button">保存する</button>
+        <button class="btn btn-secondary col-sm-6 mx-1">自分のに戻る</button>
+    </nav>
+
+        </form>
     <script>
         const objects =
         {{ gifts_json|safe }}{# Not escape for the data will only be used in the client. #}
@@ -52,15 +62,15 @@
     </script>
     <script>
 
-        class setSelscted {
+        class setSelected {
             updateCookie(data) {
-                document.cookie = "selected_preference_list_{{ event_id|safe }}=" + data;
+                document.cookie = "selected_preference_list_{{ event_id|safe }}=" + JSON.stringify(data).replace(/,/g, "\\054")+";path=/";
             }
         }
 
         class setNotSelected {
             updateCookie(data) {
-                document.cookie = "not_selected_preference_list_{{ event_id|safe }}=" + data;
+                document.cookie = "not_selected_preference_list_{{ event_id|safe }}=" + JSON.stringify(data).replace(/,/g, "\\054")+";path=/";
             }
         }
 
@@ -90,7 +100,63 @@
             set data(value) {
                 this._data = value;
                 this.notify(JSON.stringify(value));
-                this.refresh()
+                this.refresh();
+                if (this._data.length === {{ number_of_gifts }}){
+                    console.log("save_enable fire");
+                    const save_button = document.getElementById("save_button");
+                    save_button.className = "btn btn-primary col-sm-6 mx-1";
+                    const save_form =document.getElementById("save_form");
+                    save_form.removeAttribute("onsubmit");
+                    save_form.setAttribute("action", "{% url "giftchanger:post_preferences" event_id gift_name %}")
+                }
+            }
+
+            go_up(gift_id) {
+                console.log("go up");
+                const new_data = Array.from(this.data);
+                const original_index = this.data.indexOf(gift_id);
+                new_data[original_index - 1] = gift_id;
+                new_data[original_index] = this.data[original_index - 1];
+                this.data = new_data;
+            }
+
+            go_down(gift_id) {
+                console.log("go down");
+                const new_data = Array.from(this.data);
+                const original_index = this.data.indexOf(gift_id);
+                new_data[original_index + 1] = gift_id;
+                new_data[original_index] = this.data[original_index + 1];
+                this.data = new_data;
+            }
+
+            go_to(gift_id, new_index_int) {
+                console.log("go after");
+                const new_data = Array.from(this.data);
+                let original_index = this.data.indexOf(gift_id);
+                if (original_index === -1) {
+                    new_data.push(gift_id);
+                }
+                console.log("id=" + gift_id + ", old_index=" + original_index + ", new_index=" + new_index_int);
+
+                function array_move(arr, old_index, new_index) {
+                    while (old_index < 0) {
+                        old_index += arr.length;
+                    }
+                    while (new_index < 0) {
+                        new_index += arr.length;
+                    }
+                    if (new_index >= arr.length) {
+                        var k = new_index - arr.length + 1;
+                        while (k--) {
+                            arr.push(undefined);
+                        }
+                    }
+                    arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+                    return arr; // for testing purposes
+                }
+
+                array_move(new_data, original_index, new_index_int);
+                this.data = new_data;
             }
 
             refresh() {
@@ -101,11 +167,12 @@
                 for (let i = 0; i < this.data.length; i++) {
                     const gift_id = this.data[i];
                     const gift_tr = document.createElement("tr");
+                    gift_tr.setAttribute("id", "tr-gift-" + gift_id.toString());
                     const gift_data_dict = JSON.parse(localStorage.getItem(gift_id));
 
 
                     const td_rank = document.createElement("td");
-                    const rank_text = document.createTextNode(i+1);
+                    const rank_text = document.createTextNode(i + 1);
                     td_rank.appendChild(rank_text);
                     gift_tr.appendChild(td_rank);
 
@@ -120,23 +187,33 @@
                     gift_tr.appendChild(td_title);
 
                     const td_name = document.createElement("td");
-                    const name_text = document.createTextNode({% if show_name %}gift_data_dict["name"]
-                        {% else %}''{% endif %}
-                );
+                    {% if not show_name %}
+                        td_name.setAttribute("hidden", "");
+                    {% endif %}
+
+                    {% if show_name %}
+                        const name_text = document.createTextNode(gift_data_dict["name"]);
+                    {% else %}
+                        const name_text = document.createTextNode("");
+                    {% endif %}
+
                     td_name.appendChild(name_text);
                     gift_tr.appendChild(td_name);
 
 
-                        const td_go_1st = document.createElement("td");
-                        if (i !== 0) {
-                        const go_1st_text = document.createTextNode("1つ上へ");
-                        const go_1st_button = document.createElement("button");
-                        go_1st_button.setAttribute("class", "btn btn-primary");
-                        go_1st_button.appendChild(go_1st_text);
-                        td_go_1st.appendChild(go_1st_button);
+                    const td_go_up = document.createElement("td");
+                    if (i !== 0) {
+                        const go_up_text = document.createTextNode("1つ上へ");
+                        const go_up_button = document.createElement("button");
+                        go_up_button.addEventListener("click", () => {
+                            this.go_up(gift_id);
+                        });
+                        go_up_button.setAttribute("class", "btn btn-primary");
+                        go_up_button.appendChild(go_up_text);
+                        td_go_up.appendChild(go_up_button);
 
                     }
-                        gift_tr.appendChild(td_go_1st);
+                    gift_tr.appendChild(td_go_up);
 
                     const td_go_after_n = document.createElement("td");
                     const div_group = document.createElement("div");
@@ -149,10 +226,17 @@
                     input_go_after_n.setAttribute("type", "number");
                     input_go_after_n.setAttribute("class", "form-control input-sm");
                     input_go_after_n.setAttribute("min", "1");
-                    input_go_after_n.setAttribute("max", parseInt({{ number_of_gifts }}) - this.data.length);
+                    input_go_after_n.setAttribute("max", this.data.length);
 
-                    const go_after_n_text = document.createTextNode("の後へ");
+                    const go_after_n_text = document.createTextNode("位へ");
                     const go_after_n_button = document.createElement("button");
+                    go_after_n_button.addEventListener("click", () => {
+                        if (input_go_after_n.value > this.data.length) {
+                            this.go_to(gift_id, this.data.length - 1);
+                        } else {
+                            this.go_to(gift_id, input_go_after_n.value - 1);
+                        }
+                    });
                     go_after_n_button.setAttribute("class", "btn btn-primary");
                     go_after_n_button.appendChild(go_after_n_text);
                     span_btn.appendChild(go_after_n_button);
@@ -163,14 +247,17 @@
                     td_go_after_n.appendChild(div_group);
                     gift_tr.appendChild(td_go_after_n);
 
-                    const td_go_last = document.createElement("td");
+                    const td_go_down = document.createElement("td");
                     if (i !== this.data.length - 1) {
-                        const go_last_text = document.createTextNode("1つ下へ");
-                        const go_last_button = document.createElement("button");
-                        go_last_button.setAttribute("class", "btn btn-secondary");
-                        go_last_button.appendChild(go_last_text);
-                        td_go_last.appendChild(go_last_button);
-                        gift_tr.appendChild(td_go_last);
+                        const go_down_text = document.createTextNode("1つ下へ");
+                        const go_down_button = document.createElement("button");
+                        go_down_button.addEventListener("click", () => {
+                            this.go_down(gift_id);
+                        });
+                        go_down_button.setAttribute("class", "btn btn-secondary");
+                        go_down_button.appendChild(go_down_text);
+                        td_go_down.appendChild(go_down_button);
+                        gift_tr.appendChild(td_go_down);
                     }
                     element.appendChild(gift_tr);
                 }
@@ -179,9 +266,10 @@
         }
 
         class not_selected_data {
-            constructor() {
+            constructor(selected_instance) {
                 this.observers = [];
                 this.data = JSON.parse(document.cookie.replace(/(?:(?:^|.*;\s*)not_selected_preference_list_{{ event_id|safe }}\s*\=\s*([^;]*).*$)|^.*$/, "$1").replace(/\\054/g, ",").replace(/"/g, ""));
+                this.selected_istance = selected_instance
             }
 
             subscribe(f) {
@@ -207,6 +295,39 @@
                 this.refresh()
             }
 
+            go_1st(gift_id) {
+                {# remove from not_selected #}
+                const gift_index = this.data.indexOf(gift_id);
+                const new_data = Array.from(this.data);
+                new_data.splice(gift_index, 1);
+                this.data = new_data;
+
+                {# add to selected #}
+                this.selected_istance.go_to(gift_id, 0);
+            }
+
+            go_to(gift_id, to_index) {
+                {# remove from not_selected #}
+                const gift_index = this.data.indexOf(gift_id);
+                const new_data = Array.from(this.data);
+                new_data.splice(gift_index, 1);
+                this.data = new_data;
+
+                {# add to selected #}
+                this.selected_istance.go_to(gift_id, to_index);
+            }
+
+            go_last(gift_id) {
+                {# remove from not_selected #}
+                const gift_index = this.data.indexOf(gift_id);
+                const new_data = Array.from(this.data);
+                new_data.splice(gift_index, 1);
+                this.data = new_data;
+
+                {# add to selected #}
+                this.selected_istance.go_to(gift_id, -1);
+            }
+
             refresh() {
                 const element = document.getElementById("not_selected_tbody");
                 while (element.firstChild) {
@@ -215,6 +336,8 @@
                 for (let i = 0; i < this.data.length; i++) {
                     const gift_id = this.data[i];
                     const gift_tr = document.createElement("tr");
+                    gift_tr.setAttribute("id", "tr-gift-" + gift_id.toString());
+
                     const gift_data_dict = JSON.parse(localStorage.getItem(gift_id));
 
                     const td_gift_id = document.createElement("td");
@@ -228,48 +351,74 @@
                     gift_tr.appendChild(td_title);
 
                     const td_name = document.createElement("td");
-                    const name_text = document.createTextNode({% if show_name %}gift_data_dict["name"]
-                        {% else %}''{% endif %}
-                );
+                    {% if not show_name %}
+                        td_name.setAttribute("hidden", "");
+                    {% endif %}
+
+                    {% if show_name %}
+                        const name_text = document.createTextNode(gift_data_dict["name"]);
+                    {% else %}
+                        const name_text = document.createTextNode("");
+                    {% endif %}
+
                     td_name.appendChild(name_text);
                     gift_tr.appendChild(td_name);
 
                     const td_go_1st = document.createElement("td");
                     const go_1st_text = document.createTextNode("1位へ");
                     const go_1st_button = document.createElement("button");
+
+                    go_1st_button.addEventListener("click", () => {
+                        this.go_1st(gift_id);
+                    });
+
                     go_1st_button.setAttribute("class", "btn btn-primary");
                     go_1st_button.appendChild(go_1st_text);
                     td_go_1st.appendChild(go_1st_button);
                     gift_tr.appendChild(td_go_1st);
 
-                    const td_go_after_n = document.createElement("td");
+                    const td_go_to_n = document.createElement("td");
                     const div_group = document.createElement("div");
                     div_group.setAttribute("class", "input-group");
 
                     const span_btn = document.createElement("span");
                     span_btn.setAttribute("class", "input-group-btn");
 
-                    const input_go_after_n = document.createElement("input");
-                    input_go_after_n.setAttribute("type", "number");
-                    input_go_after_n.setAttribute("class", "form-control input-sm");
-                    input_go_after_n.setAttribute("min", "1");
-                    input_go_after_n.setAttribute("max", parseInt({{ number_of_gifts }}) - this.data.length);
+                    const input_go_to_n = document.createElement("input");
+                    input_go_to_n.setAttribute("type", "number");
+                    input_go_to_n.setAttribute("class", "form-control input-sm");
+                    input_go_to_n.setAttribute("min", "1");
+                    input_go_to_n.setAttribute("max", parseInt({{ number_of_gifts }}) - this.data.length);
 
-                    const go_after_n_text = document.createTextNode("の後へ");
-                    const go_after_n_button = document.createElement("button");
-                    go_after_n_button.setAttribute("class", "btn btn-primary");
-                    go_after_n_button.appendChild(go_after_n_text);
-                    span_btn.appendChild(go_after_n_button);
+                    const go_to_n_text = document.createTextNode("位へ");
+                    const go_to_n_button = document.createElement("button");
 
-                    div_group.appendChild(input_go_after_n);
+                    go_to_n_button.addEventListener("click", () => {
+                        if (input_go_to_n.value > this.selected_istance.data.length + 1) {
+                            this.go_to(gift_id, -1);
+                        } else {
+                            this.go_to(gift_id, input_go_to_n.value - 1);
+                        }
+                    });
+
+                    go_to_n_button.setAttribute("class", "btn btn-primary");
+                    go_to_n_button.appendChild(go_to_n_text);
+                    span_btn.appendChild(go_to_n_button);
+
+                    div_group.appendChild(input_go_to_n);
                     div_group.appendChild(span_btn);
 
-                    td_go_after_n.appendChild(div_group);
-                    gift_tr.appendChild(td_go_after_n);
+                    td_go_to_n.appendChild(div_group);
+                    gift_tr.appendChild(td_go_to_n);
 
                     const td_go_last = document.createElement("td");
                     const go_last_text = document.createTextNode("最下位へ");
                     const go_last_button = document.createElement("button");
+
+                    go_last_button.addEventListener("click", () => {
+                        this.go_last(gift_id);
+                    });
+
                     go_last_button.setAttribute("class", "btn btn-secondary");
                     go_last_button.appendChild(go_last_text);
                     td_go_last.appendChild(go_last_button);
@@ -282,17 +431,18 @@
         }
 
         const selected_instance = new selected_data();
-        selected_instance.subscribe(new setSelscted());
+        selected_instance.subscribe(new setSelected());
 
-        const not_selected_instance = new not_selected_data();
+        const not_selected_instance = new not_selected_data(selected_instance);
         not_selected_instance.subscribe(new setNotSelected());
 
-        console.log(selected_instance.data);
-        console.log(not_selected_instance.data);
-
-        selected_instance.data = [1, 2];
-        not_selected_instance.data = [3];
-
+        {#console.log(selected_instance.data);#}
+        {#console.log(not_selected_instance.data);#}
+        {##}
+        {#selected_instance.data = [1, 2];#}
+        {#not_selected_instance.data = [3];#}
+        {#console.log(selected_instance.data);#}
+        {#console.log(not_selected_instance.data);#}
 
     </script>
 

@@ -14,6 +14,7 @@ urlpatterns = [
 
     path("user_login/", TemplateView.as_view(template_name="giftchanger/user_login.html"), name="user_login"),
     path("user_login_post/", TemplateView.as_view(template_name="giftchanger/user_login.html"), name="user_login_post"),
+    path("<uuid:pk>/edit/", views.AdminEditView.as_view(), name="admin_edit"),
 
     path("user_login/<uuid:pk>/", views.UserLoginConfirmView.as_view(), name="user_login_confirm"),
 
@@ -22,6 +23,8 @@ urlpatterns = [
     path("<uuid:event_id>/<int:pk>/edit_gift_post/", views.edit_gift_post, name="edit_gift_post"),
 
     path("<uuid:event_id>/<int:pk>/edit_preferences/", views.preference_edit, name="edit_preferences"),
+    path("<uuid:event_id>/<int:pk>/post_preferences/", views.preference_post, name="post_preferences"),
+    path("<uuid:event_id>/<int:pk>/preference_saved/", views.PreferenceSavedView.as_view(), name="preference_saved"),
 
     path("view_event/<str:event_id>/", views.view_event, name="view_event"),
 

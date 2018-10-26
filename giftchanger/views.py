@@ -40,9 +40,32 @@ def admin_register_post(request):
     return HttpResponseRedirect(reverse("giftchanger:register_completed", args=(event.event_id,)))
 
 
+class AdminEditView(generic.DetailView):
+    model = Event
+    template_name = "giftchanger/admin_edit.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        gifts_queryset = Gift.objects.filter(parent_event=context["event"])
+        if len(gifts_queryset) == context["event"].number_of_gifts:
+            available_bool = True
+            for gift in gifts_queryset:
+                available_bool = available_bool and gift.preference_list_str
+            context['match_available'] = available_bool
+        else:
+            context["match_available"] = False
+
+        return context
+
+
 class RegisterCompletedView(generic.DetailView):
     model = Event
     template_name = "giftchanger/admin_register_completed.html"
+
+
+class ResultCheckView(generic.DetailView):
+    model = Event
+    template_name = "giftchanger/event_result.html"
 
 
 def user_login_post(request):
@@ -92,24 +115,67 @@ def preference_edit(request, event_id, pk):
                               'value': {"title": gift.gift_title, "name": gift.user_name,
                                         "description": gift.gift_description}}
                              for gift in gifts_list], separators=(',', ':'))
-    context = {"gifts_json": gifts_json, "event_id": event_id, "show_name": parent_event.show_name_before_match, "number_of_gifts": parent_event.number_of_gifts}
+    context = {"gifts_json": gifts_json, "event_id": event_id, "gift_name": pk, "show_name": parent_event.show_name_before_match, "number_of_gifts": parent_event.number_of_gifts}
     response = render(request, "giftchanger/preference_edit.html", context)
 
     selected_cookie_key_name = "selected_preference_list_" + str(event_id)
     not_selected_cookie_key_name = "not_selected_preference_list_" + str(event_id)
 
-    if selected_cookie_key_name in request.COOKIES:
-        # selected_str = request.COOKIES.get(selected_cookie_key_name)
-        # not_selected_str = request.COOKIES.get(not_selected_cookie_key_name)
-        pass
+    if selected_cookie_key_name in request.COOKIES and request.COOKIES.get(selected_cookie_key_name):
+        selected_list = json.loads(request.COOKIES.get(selected_cookie_key_name))
+        not_selected_str = [gift.id for gift in gifts_list if gift.id not in selected_list]
+
     else:
-        selected_str = "[]"
-        not_selected_str = str([gift.id for gift in gifts_list])
-        print(not_selected_str)
-        response.set_cookie(selected_cookie_key_name, selected_str, path=request.path)
-        response.set_cookie(not_selected_cookie_key_name, not_selected_str, path=request.path)
+        gift = Gift.objects.get(
+            parent_event=Event.objects.get(event_id=event_id),
+            id=pk
+        )
+        if gift.preference_list_str:
+            try:
+                selected_list = json.loads(gift.preference_list_str)
+                selected_str = gift.preference_list_str
+                not_selected_str = [gift.id for gift in gifts_list if gift.id not in selected_list]
+
+            except json.JSONDecodeError as error_msg:
+                selected_str = "[]"
+                not_selected_str = str([gift.id for gift in gifts_list])
+
+        else:
+            selected_str = "[]"
+            not_selected_str = str([gift.id for gift in gifts_list])
+
+        response.set_cookie(selected_cookie_key_name, selected_str)
+    response.set_cookie(not_selected_cookie_key_name, not_selected_str)
 
     return response
+
+
+def preference_post(request, event_id, pk):
+    gift = Gift.objects.get(
+        parent_event=Event.objects.get(event_id=event_id),
+        id=pk
+    )
+    selected_cookie_key_name = "selected_preference_list_" + str(event_id)
+    not_selected_cookie_key_name = "not_selected_preference_list_" + str(event_id)
+    print(request.COOKIES)
+
+    if selected_cookie_key_name in request.COOKIES:
+        preference_list = json.loads(request.COOKIES[selected_cookie_key_name])
+        not_selected_list = json.loads(request.COOKIES[not_selected_cookie_key_name])
+        print(preference_list)
+        print(not_selected_list)
+
+        if len(preference_list) == gift.parent_event.number_of_gifts:
+            gift.preference_list_str = str(preference_list)
+            gift.not_selected_list_str = str(not_selected_list)
+            gift.save()
+
+    return HttpResponseRedirect(reverse("giftchanger:preference_saved", args=(event_id, gift.id)))
+
+
+class PreferenceSavedView(generic.DetailView):
+    model = Gift
+    template_name = "giftchanger/preference_saved.html"
 
 
 # class PreferenceEditView(generic.ListView):

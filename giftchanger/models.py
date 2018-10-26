@@ -22,7 +22,8 @@ class Gift(models.Model):
     user_name = models.CharField(max_length=20)
     gift_title = models.CharField(max_length=40, default="")
     gift_description = models.CharField(max_length=1000, default="")
-    preference_list_str = models.CharField(max_length=2000, default="")
+    preference_list_str = models.CharField(max_length=10000, default="")
+    not_selected_list_str = models.CharField(max_length=10000, default="")
 
 
 
