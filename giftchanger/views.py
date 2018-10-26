@@ -1,10 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.core.mail import send_mail, EmailMessage
 # Create your views here.
 from .models import Event, Gift
 from django.utils import timezone
 import uuid
+from .ttc_cycle import ttc_algorithm
 
 import json
 
@@ -63,47 +64,110 @@ class RegisterCompletedView(generic.DetailView):
     template_name = "giftchanger/admin_register_completed.html"
 
 
-class ResultCheckView(generic.DetailView):
-    model = Event
-    template_name = "giftchanger/event_result.html"
-
-
 def user_login_post(request):
     event = Event.objects.get(
-        event_date=request.POST.get["event_date"],
-        event_name=request.POST.get["event_name"]
+        event_date=request.POST.get("event_date"),
+        event_name=request.POST.get("event_name")
     )
     return HttpResponseRedirect(reverse("giftchanger:user_login_confirm", args=(event.event_id,)))
 
 
-class UserLoginConfirmView(generic.DetailView):
+# class UserLoginConfirmView(generic.DetailView):
+#     model = Event
+#     template_name = "giftchanger/user_login_confirm.html"
+
+def ttc_result_post(request, pk):
+    event = Event.objects.get(event_id=str(pk))
+    gifts_queryset = Gift.objects.filter(parent_event=event)
+    if len(gifts_queryset) == event.number_of_gifts:
+        preferences = {}
+        for gift in gifts_queryset:
+            if len(json.loads(gift.preference_list_str)) == event.number_of_gifts:
+                preferences[gift.id] = json.loads(gift.preference_list_str)
+        if len(preferences) == event.number_of_gifts:
+
+            # print(preferences)
+            # result_str = ""
+            result_list = ttc_algorithm(preferences)
+
+            for list1 in result_list:
+                for list2 in list1:
+                    for i in range(len(list2)):
+                        list2[i] = gifts_queryset.get(id=list2[i]).user_name + "(" + str(list2[i]) + ")"
+
+            result_str = json.dumps(result_list, ensure_ascii=False)
+
+            event.result = result_str
+            event.save()
+
+            return HttpResponseRedirect(reverse("giftchanger:event_result", args=(event.event_id, )))
+
+
+class EventResultView(generic.DetailView):
     model = Event
-    template_name = "giftchanger/user_login_confirm.html"
+    template_name = "giftchanger/event_result.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        result_str = context["event"].result
+        context["result"] = result_str
+
+        return context
+
+
+def user_login_confirm(request, pk):
+    event = Event.objects.get(
+        event_id=pk
+    )
+    num_gifts = len(Gift.objects.filter(parent_event=event))
+    print(num_gifts)
+    if num_gifts < event.number_of_gifts:
+        return render(request, "giftchanger/user_login_confirm.html", context={"event": event, "current_num_gifts": str(num_gifts)})
+
+    else:
+        return render(request, "giftchanger/user_login_failure.html", context={"event": event, "current_num_gifts": str(num_gifts)})
 
 
 def create_user_post(request, event_id):
-    gift = Gift.objects.get_or_create(
-        parent_event=Event.objects.get(event_id=event_id),
-        user_name=request.POST["user_name"],
-    )[0]
-    return HttpResponseRedirect(reverse("giftchanger:edit_gift", args=(event_id, gift.id)))
+    event = Event.objects.get(event_id=event_id)
+    num_gifts = len(Gift.objects.filter(parent_event=event))
+    if num_gifts < event.number_of_gifts:
+        gift = Gift.objects.get_or_create(
+            parent_event=event,
+            user_name=request.POST["user_name"],
+        )[0]
+        return HttpResponseRedirect(reverse("giftchanger:edit_gift", args=(event_id, gift.id)))
+    else:
+        gift = get_object_or_404(Gift, parent_event=event, user_name=request.POST["user_name"])
+        return HttpResponseRedirect(reverse("giftchanger:edit_gift", args=(event_id, gift.id)))
 
 
 def edit_gift_post(request, event_id, pk):
+    event = Event.objects.get(event_id=event_id)
     gift = Gift.objects.get(
-        parent_event=Event.objects.get(event_id=event_id),
+        parent_event=event,
         id=pk,
     )
     gift.gift_title = request.POST["gift_title"]
     gift.gift_description = request.POST["gift_description"]
     gift.save()
-
-    return HttpResponseRedirect(reverse("giftchanger:edit_preferences", args=(event_id, gift.id)))
+    return HttpResponseRedirect(reverse("giftchanger:edit_preferences_check", args=(event_id, gift.id)))
 
 
 class GiftEditView(generic.DetailView):
     model = Gift
     template_name = "giftchanger/gift_edit.html"
+
+
+def preference_edit_check(request, event_id, pk):
+    event = Event.objects.get(event_id=event_id)
+    gifts = Gift.objects.filter(parent_event=event)
+    gift_registered_num = len(gifts)
+    gift_finished_num = len(gifts.exclude(gift_title__exact=""))
+    if event.number_of_gifts == gift_registered_num:
+        return HttpResponseRedirect(reverse("giftchanger:edit_preferences", args=(event_id, pk)))
+    else:
+        return render(request, "giftchanger/preference_check.html", context={"event": event, "gift_registered_num": gift_registered_num, "gift_finished_num": gift_finished_num})
 
 
 def preference_edit(request, event_id, pk):
@@ -157,13 +221,10 @@ def preference_post(request, event_id, pk):
     )
     selected_cookie_key_name = "selected_preference_list_" + str(event_id)
     not_selected_cookie_key_name = "not_selected_preference_list_" + str(event_id)
-    print(request.COOKIES)
 
     if selected_cookie_key_name in request.COOKIES:
         preference_list = json.loads(request.COOKIES[selected_cookie_key_name])
         not_selected_list = json.loads(request.COOKIES[not_selected_cookie_key_name])
-        print(preference_list)
-        print(not_selected_list)
 
         if len(preference_list) == gift.parent_event.number_of_gifts:
             gift.preference_list_str = str(preference_list)

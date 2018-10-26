@@ -15,6 +15,7 @@ class Event(models.Model):
     event_id = models.CharField(max_length=36, primary_key=True)
     allow_picture = models.BooleanField(default=False)
     force_picture = models.BooleanField(default=False)
+    result = models.CharField(max_length=20000, default="")
 
 
 class Gift(models.Model):

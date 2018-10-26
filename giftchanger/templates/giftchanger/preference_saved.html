@@ -8,6 +8,6 @@
     <input value="{{ gift.preference_list_str }}" readonly>
 
     <div>
-    マッチング結果は、<a href="">こちら</a>から確認できます。</div>
+    マッチング結果は、<a href="{% url 'giftchanger:event_result' gift.parent_event.event_id %}">こちら</a>から確認できます。</div>
 
 {% endblock %}

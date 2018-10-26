@@ -7,19 +7,20 @@
     <div class="col-12">参加者予定数: {{ event.number_of_gifts }}人</div>
     <div class="col-12">登録済み: {{ current_num_gifts }}人</div>
     <br>
-    <div class="col-12">名前の表示(選択時): {% if event.show_name_before_match == True %}あり{% else %}なし{% endif %}</div>
-    <div class="col-12">名前の表示(マッチング後): {% if event.show_name_after_match == True %}あり{% else %}なし{% endif %}</div>
     <br>
-    <form action="{% url 'giftchanger:create_user_post' event.event_id %}" method="post">
+    登録済みの人数が、参加予定人数に達しました。<br>
+    新規にイベントの参加登録を希望する方は。イベントの主催者に連絡してください。<br>
+        <form action="{% url 'giftchanger:create_user_post' event.event_id %}" method="post">
         {% csrf_token %}
-        <div class="form-label-group">
-            <label for="user_name">あなたの名前（未登録の場合は、参加者として名前が登録されます。）</label>
+    <div class="form-label-group">
+        <div class="mt-3">登録済みの方は、ここからログインできます。</div>
+            <label for="user_name">あなたの名前</label>
             <input id="user_name" name="user_name" class="form-control" placeholder="あなたの名前" required="" autofocus=""
                    type="text">
             <input id="event_id" name="event_id" value="{{ event.event_id }}" hidden>
             <button class="btn btn-primary">ログイン</button>
         </div>
-    </form>
+        </form>
 
 
 {% endblock %}

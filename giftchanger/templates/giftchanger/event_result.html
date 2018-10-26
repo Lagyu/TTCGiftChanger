@@ -2,5 +2,10 @@
 {% block title %}{{ event.event_name }}のマッチング結果{% endblock %}
 
 {% block main %}
-
+    {% if result %}
+        {{ result }}
+    {% else %}
+        まだマッチングされていません。(選好登録済み)<br>
+        しばらく待つか、主催者に確認してください。
+    {% endif %}
 {% endblock %}

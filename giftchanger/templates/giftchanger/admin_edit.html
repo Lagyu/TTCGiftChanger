@@ -4,8 +4,9 @@
 {% block main %}
 
     {% if match_available %}
-            <form action="">
+            <form action="{% url 'giftchanger:matching_result_post' event.event_id %}">
                   {% csrf_token %}
+                <input title="event_id" name="event_id" type="text" value="{{ event.event_id }}" hidden>
             <button class="btn btn-primary">マッチングを実行</button>
         </form>
         {% endif %}
