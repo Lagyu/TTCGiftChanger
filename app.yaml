@@ -2,9 +2,18 @@
 runtime: python
 env: flex
 entrypoint: gunicorn -b :$PORT ttcgiftchanger.wsgi
+handlers:
+
+- url: /static
+  static_dir: static/
+- url: .*
+  script: ttcgiftchanger.wsgi.application
 
 beta_settings:
-    cloud_sql_instances: piyo-220609:asia-northeast1:piyo-ttc-gift
+    cloud_sql_instances: <INSTANCE_CONNECTION_NAME>
+
+automatic_scaling:
+  min_instances: 0
 
 runtime_config:
   python_version: 3
