@@ -1,6 +1,6 @@
 {% extends "giftchanger/_base.html" %}
 
-{% block title %}イベントを登録{% endblock %}
+{% block title %}提供するものを登録{% endblock %}
 {% block main %}
     <h2 class="col-12">プレゼント登録・編集画面</h2>
     <form action="{% url 'giftchanger:edit_gift_post' gift.parent_event.event_id gift.id %}" method="post">

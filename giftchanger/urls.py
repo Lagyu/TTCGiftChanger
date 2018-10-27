@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 
 
 app_name = "giftchanger"
@@ -19,7 +19,9 @@ urlpatterns = [
     path("<uuid:pk>/match_with_ttc/", views.ttc_result_post, name="matching_result_post"),
     path("<uuid:pk>/event_result/", views.EventResultView.as_view(), name="event_result"),
 
-    path("user_login/<uuid:pk>/", views.user_login_confirm, name="user_login_confirm"),
+    path("<uuid:pk>/user_login/", views.user_login_confirm, name="user_login_confirm"),
+    path("user_login/<uuid:pk>/", RedirectView.as_view(permanent=True, pattern_name="giftchanger:user_login_confirm")),
+    path("<uuid:pk>/", RedirectView.as_view(permanent=True, pattern_name="giftchanger:user_login_confirm")),
 
     path("<uuid:event_id>/create_user_post/", views.create_user_post, name="create_user_post"),
     path("<uuid:event_id>/<int:pk>/edit_gift/", views.GiftEditView.as_view(), name="edit_gift"),

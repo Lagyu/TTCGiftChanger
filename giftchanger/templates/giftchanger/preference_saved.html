@@ -4,9 +4,12 @@
 {% block main %}
 
     <div>選好の保存が完了しました。</div>
-    <div>あなたの選好列：</div>
-    <input value="{{ gift.preference_list_str }}" readonly>
+    <br>
+    <div>提供するものの説明を編集したい場合<a href="{% url 'giftchanger:edit_gift' gift.parent_event.event_id gift.id %}">こちら</a>。</div>
+    <div>選好順位の説明を編集したい場合<a href="{% url 'giftchanger:edit_preferences' gift.parent_event.event_id gift.id %}">こちら</a>。</div>
 
+
+    <br>
     <div>
     マッチング結果は、<a href="{% url 'giftchanger:event_result' gift.parent_event.event_id %}">こちら</a>から確認できます。</div>
 

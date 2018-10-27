@@ -1,15 +1,27 @@
 {% extends "giftchanger/_base.html" %}
 
-{% block title %}イベントを登録{% endblock %}
+{% block title %}イベントを編集{% endblock %}
 {% block main %}
-
+    <div class="my-3">
+            全員が選好を入力し終わったらマッチング可能になります。<br>
+                <div class="col-12">参加者予定数: {{ event.number_of_gifts }}人</div>
+    <div class="col-12">参加登録済み: {{ gift_registered_num }}人</div>
+    <div class="col-12">プレゼント登録済み: {{ gift_finished_num }}人</div>
+        </div>
+    <div class="my-3">
     {% if match_available %}
             <form action="{% url 'giftchanger:matching_result_post' event.event_id %}">
                   {% csrf_token %}
                 <input title="event_id" name="event_id" type="text" value="{{ event.event_id }}" hidden>
             <button class="btn btn-primary">マッチングを実行</button>
         </form>
+        {% else %}
+            <button class="btn btn-secondary">マッチングを実行</button>
+        <br>
+
         {% endif %}
+    </div>
+
 
     <form action="{% url 'giftchanger:event_register_post' %}" method="post">
         {% csrf_token %}
@@ -22,7 +34,7 @@
 
         <div class="form-label-group">
             <label for="event_date">イベント開催日(参加者ログインの際に使います。)</label>
-            <input id="event_date" name="event_date" class="form-control" placeholder="イベント開催日" required="" type="date" value="{{ event.event_date }}">
+            <input id="event_date" name="event_date" class="form-control" placeholder="イベント開催日" required="" type="date" value="{{ event.event_date|date:"Y-m-d" }}">
         </div>
 
         <div class="form-label-group">

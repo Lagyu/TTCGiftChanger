@@ -10,7 +10,7 @@
             <thead>
             <tr>
                 <th scope="col" class="text-center">順位</th>
-                <th scope="col" class="text-center">id</th>
+                <th scope="col" class="text-center" hidden>id</th>
                 <th scope="col" class="col-6 text-center">タイトル</th>
 
                 <th scope="col" class="col-2 text-center"{% if not show_name %} hidden{% endif %}>所有者</th>
@@ -29,7 +29,7 @@
             <caption>未選択のプレゼント表示欄</caption>
             <thead>
             <tr>
-                <th scope="col" class="text-center">id</th>
+                <th scope="col" class="text-center" hidden>id</th>
                 <th scope="col" class="col-sm-6 text-center">タイトル</th>
                 <th scope="col" class="col-sm-2 text-center"{% if not show_name %} hidden{% endif %}>所有者</th>
                 <th scope="col" class="col-sm-1 text-center">1位へ</th>
@@ -47,7 +47,7 @@
     {% csrf_token %}
     <nav class="navbar fixed-bottom navbar-expand-sm navbar-dark bg-dark">
         <button class="btn btn-secondary col-sm-6 mx-1" id="save_button">保存する</button>
-        <button class="btn btn-secondary col-sm-6 mx-1">自分のに戻る</button>
+        <a class="btn btn-secondary col-sm-6 mx-1" href="{% url 'giftchanger:edit_gift' event_id gift_id %}">自分のに戻る</a>
     </nav>
 
         </form>
@@ -64,20 +64,20 @@
 
         class setSelected {
             updateCookie(data) {
-                document.cookie = "selected_preference_list_{{ event_id|safe }}=" + JSON.stringify(data).replace(/,/g, "\\054")+";path=/";
+                document.cookie = "selected_preference_list_{{ event_id|safe }}_{{ gift_id|safe }}=" + JSON.stringify(data).replace(/,/g, "\\054")+";path=/";
             }
         }
 
         class setNotSelected {
             updateCookie(data) {
-                document.cookie = "not_selected_preference_list_{{ event_id|safe }}=" + JSON.stringify(data).replace(/,/g, "\\054")+";path=/";
+                document.cookie = "not_selected_preference_list_{{ event_id|safe }}_{{ gift_id|safe }}=" + JSON.stringify(data).replace(/,/g, "\\054")+";path=/";
             }
         }
 
         class selected_data {
             constructor() {
                 this.observers = [];
-                this.data = JSON.parse(document.cookie.replace(/(?:(?:^|.*;\s*)selected_preference_list_{{ event_id|safe }}\s*\=\s*([^;]*).*$)|^.*$/, "$1").replace(/\\054/g, ",").replace(/"/g, ""));
+                this.data = JSON.parse(document.cookie.replace(/(?:(?:^|.*;\s*)selected_preference_list_{{ event_id|safe }}_{{ gift_id|safe }}\s*\=\s*([^;]*).*$)|^.*$/, "$1").replace(/\\054/g, ",").replace(/"/g, ""));
             }
 
             subscribe(f) {
@@ -107,7 +107,7 @@
                     save_button.className = "btn btn-primary col-sm-6 mx-1";
                     const save_form =document.getElementById("save_form");
                     save_form.removeAttribute("onsubmit");
-                    save_form.setAttribute("action", "{% url "giftchanger:post_preferences" event_id gift_name %}")
+                    save_form.setAttribute("action", "{% url "giftchanger:post_preferences" event_id gift_id %}")
                 }
             }
 
@@ -177,14 +177,94 @@
                     gift_tr.appendChild(td_rank);
 
                     const td_gift_id = document.createElement("td");
+                    td_gift_id.setAttribute("hidden", "");
                     const gift_id_text = document.createTextNode(gift_id);
                     td_gift_id.appendChild(gift_id_text);
                     gift_tr.appendChild(td_gift_id);
 
                     const td_title = document.createElement("td");
+
+                    const title_link = document.createElement("a");
+                    title_link.setAttribute("href", "");
+                    title_link.setAttribute("data-toggle", "modal");
+                    const modal_id = "modalID"+gift_id;
+                    title_link.setAttribute("data-target", "#"+modal_id);
+
+                    const modal = document.createElement("div");
+                    modal.setAttribute("class", "modal fade");
+                    modal.setAttribute("id", modal_id);
+                    modal.setAttribute("tabindex", "-1");
+                    modal.setAttribute("role", "-dialog");
+                    modal.setAttribute("aria-labelledby", "modalContainerFor"+gift_id);
+
+                    const modal_dialog = document.createElement("div");
+                    modal_dialog.setAttribute("class", "modal-dialog");
+                    modal_dialog.setAttribute("role", "document");
+
+                    const modal_content = document.createElement("div");
+                    modal_content.setAttribute("class", "modal-content");
+
+                    const modal_header = document.createElement("div");
+                    modal_header.setAttribute("class", "modal-header");
+
+                    const modal_title = document.createElement("h5");
+                    modal_title.setAttribute("class", "modal-title");
+                    modal_title.setAttribute("id", "modalTitleFor"+gift_id);
+                    const modal_title_text = document.createTextNode(gift_data_dict["title"]);
+                    modal_title.appendChild(modal_title_text);
+
+                    modal_header.appendChild(modal_title);
+
+                    const modal_top_close_button = document.createElement("button");
+                    modal_top_close_button.setAttribute("type", "button");
+                    modal_top_close_button.setAttribute("class", "close");
+                    modal_top_close_button.setAttribute("data-dismiss", "modal");
+                    modal_top_close_button.setAttribute("aria-label", "閉じる");
+
+                    const modal_span = document.createElement("span");
+                    modal_span.setAttribute("aria-hidden", "true");
+                    const span_text = document.createTextNode("×");
+                    modal_span.appendChild(span_text);
+
+                    modal_top_close_button.appendChild(modal_span);
+
+                    modal_header.appendChild(modal_top_close_button);
+
+                    modal_content.appendChild(modal_header);
+
+                    const modal_body = document.createElement("div");
+                    modal_body.setAttribute("class", "modal-body");
+                    const modal_body_paragraph = document.createElement("p");
+                    const modal_body_text = document.createTextNode(gift_data_dict["description"]);
+                    modal_body_paragraph.appendChild(modal_body_text);
+                    modal_body.appendChild(modal_body_paragraph);
+                    modal_content.appendChild(modal_body);
+
+                    const modal_footer = document.createElement("div");
+                    modal_footer.setAttribute("class", "modal-footer");
+
+                    const modal_bottom_close_button = document.createElement("button");
+                    modal_bottom_close_button.setAttribute("type", "button");
+                    modal_bottom_close_button.setAttribute("class", "btn btn-secondary");
+                    modal_bottom_close_button.setAttribute("data-dismiss", "modal");
+                    const modal_bottom_close_button_text = document.createTextNode("閉じる");
+                    modal_bottom_close_button.appendChild(modal_bottom_close_button_text);
+
+                    modal_footer.appendChild(modal_bottom_close_button);
+
+                    modal_content.appendChild(modal_footer);
+
+                    modal_dialog.appendChild(modal_content);
+
+                    modal.appendChild(modal_dialog);
+
+
+
                     const title_text = document.createTextNode(gift_data_dict["title"]);
-                    td_title.appendChild(title_text);
+                    title_link.appendChild(title_text);
+                    td_title.appendChild(title_link);
                     gift_tr.appendChild(td_title);
+                    gift_tr.appendChild(modal);
 
                     const td_name = document.createElement("td");
                     {% if not show_name %}
@@ -268,7 +348,7 @@
         class not_selected_data {
             constructor(selected_instance) {
                 this.observers = [];
-                this.data = JSON.parse(document.cookie.replace(/(?:(?:^|.*;\s*)not_selected_preference_list_{{ event_id|safe }}\s*\=\s*([^;]*).*$)|^.*$/, "$1").replace(/\\054/g, ",").replace(/"/g, ""));
+                this.data = JSON.parse(document.cookie.replace(/(?:(?:^|.*;\s*)not_selected_preference_list_{{ event_id|safe }}_{{ gift_id|safe }}\s*\=\s*([^;]*).*$)|^.*$/, "$1").replace(/\\054/g, ",").replace(/"/g, ""));
                 this.selected_istance = selected_instance
             }
 
@@ -341,14 +421,94 @@
                     const gift_data_dict = JSON.parse(localStorage.getItem(gift_id));
 
                     const td_gift_id = document.createElement("td");
+                    td_gift_id.setAttribute("hidden", "");
                     const gift_id_text = document.createTextNode(gift_id);
                     td_gift_id.appendChild(gift_id_text);
                     gift_tr.appendChild(td_gift_id);
 
-                    const td_title = document.createElement("td");
+                                        const td_title = document.createElement("td");
+
+                    const title_link = document.createElement("a");
+                    title_link.setAttribute("href", "");
+                    title_link.setAttribute("data-toggle", "modal");
+                    const modal_id = "modalID"+gift_id;
+                    title_link.setAttribute("data-target", "#"+modal_id);
+
+                    const modal = document.createElement("div");
+                    modal.setAttribute("class", "modal fade");
+                    modal.setAttribute("id", modal_id);
+                    modal.setAttribute("tabindex", "-1");
+                    modal.setAttribute("role", "-dialog");
+                    modal.setAttribute("aria-labelledby", "modalContainerFor"+gift_id);
+
+                    const modal_dialog = document.createElement("div");
+                    modal_dialog.setAttribute("class", "modal-dialog");
+                    modal_dialog.setAttribute("role", "document");
+
+                    const modal_content = document.createElement("div");
+                    modal_content.setAttribute("class", "modal-content");
+
+                    const modal_header = document.createElement("div");
+                    modal_header.setAttribute("class", "modal-header");
+
+                    const modal_title = document.createElement("h5");
+                    modal_title.setAttribute("class", "modal-title");
+                    modal_title.setAttribute("id", "modalTitleFor"+gift_id);
+                    const modal_title_text = document.createTextNode(gift_data_dict["title"]);
+                    modal_title.appendChild(modal_title_text);
+
+                    modal_header.appendChild(modal_title);
+
+                    const modal_top_close_button = document.createElement("button");
+                    modal_top_close_button.setAttribute("type", "button");
+                    modal_top_close_button.setAttribute("class", "close");
+                    modal_top_close_button.setAttribute("data-dismiss", "modal");
+                    modal_top_close_button.setAttribute("aria-label", "閉じる");
+
+                    const modal_span = document.createElement("span");
+                    modal_span.setAttribute("aria-hidden", "true");
+                    const span_text = document.createTextNode("×");
+                    modal_span.appendChild(span_text);
+
+                    modal_top_close_button.appendChild(modal_span);
+
+                    modal_header.appendChild(modal_top_close_button);
+
+                    modal_content.appendChild(modal_header);
+
+                    const modal_body = document.createElement("div");
+                    modal_body.setAttribute("class", "modal-body");
+                    const modal_body_paragraph = document.createElement("p");
+                    const modal_body_text = document.createTextNode(gift_data_dict["description"]);
+                    modal_body_paragraph.appendChild(modal_body_text);
+                    modal_body.appendChild(modal_body_paragraph);
+                    modal_content.appendChild(modal_body);
+
+                    const modal_footer = document.createElement("div");
+                    modal_footer.setAttribute("class", "modal-footer");
+
+                    const modal_bottom_close_button = document.createElement("button");
+                    modal_bottom_close_button.setAttribute("type", "button");
+                    modal_bottom_close_button.setAttribute("class", "btn btn-secondary");
+                    modal_bottom_close_button.setAttribute("data-dismiss", "modal");
+                    const modal_bottom_close_button_text = document.createTextNode("閉じる");
+                    modal_bottom_close_button.appendChild(modal_bottom_close_button_text);
+
+                    modal_footer.appendChild(modal_bottom_close_button);
+
+                    modal_content.appendChild(modal_footer);
+
+                    modal_dialog.appendChild(modal_content);
+
+                    modal.appendChild(modal_dialog);
+
+
+
                     const title_text = document.createTextNode(gift_data_dict["title"]);
-                    td_title.appendChild(title_text);
+                    title_link.appendChild(title_text);
+                    td_title.appendChild(title_link);
                     gift_tr.appendChild(td_title);
+                    gift_tr.appendChild(modal);
 
                     const td_name = document.createElement("td");
                     {% if not show_name %}

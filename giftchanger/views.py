@@ -32,23 +32,23 @@ def admin_register_post(request):
         force_picture=True if request.POST["allow_picture"] == "always" else False
     )
 
-    subject = "TTCプレゼント交換 イベント登録完了"
-    message = "参加者ログイン用URLとか送る。"
-    from_email = "piyopiyo@example.com"
-    to = [request.POST["email"]]
-    bcc = ["piyopiyopiyo@example.com"]
+    # subject = "TTCプレゼント交換 イベント登録完了"
+    # message = "参加者ログイン用URLとか送る。"
+    # from_email = "piyopiyo@example.com"
+    # to = [request.POST["email"]]
+    # bcc = ["piyopiyopiyo@example.com"]
 
-    if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine'):
-        from google.appengine.api import mail
-        mail.send_mail(sender="noreply@piyo-220609.appspot.com",
-                       to=to,
-                       subject=subject,
-                       body=message,)
-
-    else:
-
-        email = EmailMessage(subject, message, from_email, to, bcc)
-        email.send()
+    # if os.getenv('GAE_INSTANCE'):
+    #     from google.appengine.api import mail
+    #     mail.send_mail(sender="noreply@piyo-220609.appspot.com",
+    #                    to=to,
+    #                    subject=subject,
+    #                    body=message,)
+    #
+    # else:
+    #
+    #     email = EmailMessage(subject, message, from_email, to, bcc)
+    #     email.send()
 
     # for Google App Engine
     return HttpResponseRedirect(reverse("giftchanger:register_completed", args=(event.event_id,)))
@@ -60,14 +60,22 @@ class AdminEditView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        gifts_queryset = Gift.objects.filter(parent_event=context["event"])
-        if len(gifts_queryset) == context["event"].number_of_gifts:
+        gifts = Gift.objects.filter(parent_event=context["event"])
+
+        gift_registered_num = len(gifts)
+        gift_finished_num = len(gifts.exclude(gift_title__exact=""))
+
+        if gift_registered_num == context["event"].number_of_gifts:
             available_bool = True
-            for gift in gifts_queryset:
+            for gift in gifts:
                 available_bool = available_bool and gift.preference_list_str
             context['match_available'] = available_bool
         else:
             context["match_available"] = False
+
+        context["gift_registered_num"] = gift_registered_num
+        context["gift_finished_num"] = gift_finished_num
+
 
         return context
 
@@ -106,9 +114,9 @@ def ttc_result_post(request, pk):
             for list1 in result_list:
                 for list2 in list1:
                     for i in range(len(list2)):
-                        list2[i] = gifts_queryset.get(id=list2[i]).user_name + "(" + str(list2[i]) + ")"
+                        list2[i] = gifts_queryset.get(id=list2[i]).user_name
 
-            result_str = json.dumps(result_list, ensure_ascii=False)
+            result_str = json.dumps(result_list[0], ensure_ascii=False, separators=('→', ':'))
 
             event.result = result_str
             event.save()
@@ -192,11 +200,11 @@ def preference_edit(request, event_id, pk):
                               'value': {"title": gift.gift_title, "name": gift.user_name,
                                         "description": gift.gift_description}}
                              for gift in gifts_list], separators=(',', ':'))
-    context = {"gifts_json": gifts_json, "event_id": event_id, "gift_name": pk, "show_name": parent_event.show_name_before_match, "number_of_gifts": parent_event.number_of_gifts}
+    context = {"gifts_json": gifts_json, "event_id": event_id, "gift_id": pk, "show_name": parent_event.show_name_before_match, "number_of_gifts": parent_event.number_of_gifts}
     response = render(request, "giftchanger/preference_edit.html", context)
 
-    selected_cookie_key_name = "selected_preference_list_" + str(event_id)
-    not_selected_cookie_key_name = "not_selected_preference_list_" + str(event_id)
+    selected_cookie_key_name = "selected_preference_list_" + str(event_id)+"_"+str(pk)
+    not_selected_cookie_key_name = "not_selected_preference_list_" + str(event_id)+"_"+str(pk)
 
     if selected_cookie_key_name in request.COOKIES and request.COOKIES.get(selected_cookie_key_name):
         selected_list = json.loads(request.COOKIES.get(selected_cookie_key_name))
@@ -232,8 +240,8 @@ def preference_post(request, event_id, pk):
         parent_event=Event.objects.get(event_id=event_id),
         id=pk
     )
-    selected_cookie_key_name = "selected_preference_list_" + str(event_id)
-    not_selected_cookie_key_name = "not_selected_preference_list_" + str(event_id)
+    selected_cookie_key_name = "selected_preference_list_" + str(event_id) + "_" + str(pk)
+    not_selected_cookie_key_name = "not_selected_preference_list_" + str(event_id) + "_" + str(pk)
 
     if selected_cookie_key_name in request.COOKIES:
         preference_list = json.loads(request.COOKIES[selected_cookie_key_name])
