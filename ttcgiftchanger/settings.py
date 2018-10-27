@@ -25,7 +25,7 @@ SECRET_KEY = '@i%*pfp=zx@9$mc8_o$5!!vp*jnr5lm$2nm0e5ebr+7u)7nymu'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", ]
 
 
 # Application definition
@@ -73,18 +73,39 @@ WSGI_APPLICATION = 'ttcgiftchanger.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/2.1/ref/settings/#databases
+# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+# [START dbconfig]
+if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine'):
+    # Running on production App Engine, so connect to Google Cloud SQL using
+    # the unix socket at /cloudsql/<your-cloudsql-connection string>
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': '/cloudsql/<your-cloudsql-connection-string>',
+            'NAME': 'giftchanger',
+            'USER': '<your-database-user>',
+            'PASSWORD': '<your-database-password>',
+        }
     }
-}
-
-
-# Password validation
-# https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
+else:
+    # Running locally so connect to either a local MySQL instance or connect to
+    # Cloud SQL via the proxy. To start the proxy via command line:
+    #
+    #     $ cloud_sql_proxy -instances=[INSTANCE_CONNECTION_NAME]=tcp:3306
+    #
+    # See https://cloud.google.com/sql/docs/mysql-connect-proxy
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': '127.0.0.1',
+            'PORT': '3306',
+            'NAME': 'giftchanger',
+            'USER': '<your-database-user>',
+            'PASSWORD': '<your-database-password>',
+        }
+    }
+# [END dbconfig]
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -105,9 +126,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ja'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tokyo'
 
 USE_I18N = True
 
@@ -119,17 +140,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'https://storage.googleapis.com/piyo-220609/static/'
 
+if not os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine'):
 
-DEFAULT_FROM_EMAIL = "piyo@example.com"
-
-EMAIL_HOST = "localhost"
-
-EMAIL_HOST_USER = "piyo@example.com"
-
-EMAIL_HOST_PASSWORD = ""
-
-EMAIL_PORT = 25
-
-EMAIL_USE_TLS = False
+    DEFAULT_FROM_EMAIL = "piyo@example.com"
+    EMAIL_HOST = "localhost"
+    EMAIL_HOST_USER = "piyo@example.com"
+    EMAIL_HOST_PASSWORD = ""
+    EMAIL_PORT = 25
+    EMAIL_USE_TLS = False
