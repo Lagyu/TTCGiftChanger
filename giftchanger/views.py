@@ -116,7 +116,11 @@ def ttc_result_post(request, pk):
                     for i in range(len(list2)):
                         list2[i] = gifts_queryset.get(id=list2[i]).user_name
 
-            result_str = json.dumps(result_list[0], ensure_ascii=False, separators=('→', ':'))
+            for list1 in result_list:
+                for i in range(len(list1)):
+                    list1[i] = str(list1[i]).replace(",", " → ")
+
+            result_str = json.dumps(result_list[0], ensure_ascii=False).replace('"', "").replace("'", "")
 
             event.result = result_str
             event.save()
