@@ -1,3 +1,4 @@
 settings.py
 app.yaml
 venv/
+.idea/
