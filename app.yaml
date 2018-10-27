@@ -1,0 +1,11 @@
+# [START runtime]
+runtime: python
+env: flex
+entrypoint: gunicorn -b :$PORT ttcgiftchanger.wsgi
+
+beta_settings:
+    cloud_sql_instances: piyo-220609:asia-northeast1:piyo-ttc-gift
+
+runtime_config:
+  python_version: 3
+# [END runtime]

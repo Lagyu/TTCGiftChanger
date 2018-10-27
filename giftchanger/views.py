@@ -6,7 +6,7 @@ from .models import Event, Gift
 from django.utils import timezone
 import uuid
 from .ttc_cycle import ttc_algorithm
-
+import os
 import json
 
 from django.urls import reverse, resolve
@@ -31,13 +31,26 @@ def admin_register_post(request):
         allow_picture=False if request.POST["allow_picture"] == "false" else True,
         force_picture=True if request.POST["allow_picture"] == "always" else False
     )
+
     subject = "TTCプレゼント交換 イベント登録完了"
     message = "参加者ログイン用URLとか送る。"
     from_email = "piyopiyo@example.com"
     to = [request.POST["email"]]
     bcc = ["piyopiyopiyo@example.com"]
-    email = EmailMessage(subject, message, from_email, to, bcc)
-    email.send()
+
+    if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine'):
+        from google.appengine.api import mail
+        mail.send_mail(sender="noreply@piyo-220609.appspot.com",
+                       to=to,
+                       subject=subject,
+                       body=message,)
+
+    else:
+
+        email = EmailMessage(subject, message, from_email, to, bcc)
+        email.send()
+
+    # for Google App Engine
     return HttpResponseRedirect(reverse("giftchanger:register_completed", args=(event.event_id,)))
 
 
