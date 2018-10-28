@@ -4,11 +4,116 @@
 
 {% block main %}
 
-    <div class="mt-3 mx-aito">
-        <a href="{% url 'giftchanger:event_register_view' %}"><button class="btn btn-secondary m-1">交換を主催する</button></a>
+    <div class="my-4 mx-aito">
+        <a href="{% url 'giftchanger:event_register_view' %}">
+            <button class="btn btn-secondary m-1">交換を主催する</button>
+        </a>
         <a href="{% url 'giftchanger:user_login' %}">
-        <button class="btn btn-primary m-1">交換に参加する</button>
+            <button class="btn btn-primary m-1">交換に参加する</button>
         </a>
     </div>
+
+    <style>
+        .card .card-header a[data-toggle="collapse"] {
+            display: block;
+            padding: .75rem 1.25rem;
+            margin: -.75rem -1.25rem;
+        }
+
+        .card .card-header a[data-toggle="collapse"]:active,
+        .card .card-header a[data-toggle="collapse"]:hover,
+        .card .card-header a[data-toggle="collapse"]:focus {
+            text-decoration: none;
+        }
+    </style>
+
+
+    <div class="accordion" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="card">
+            <div class="card-header" role="tab" id="headingOne">
+                <h5 class="mb-0">
+                    <a class="text-body" data-toggle="collapse" href="#collapseOne" role="button" aria-expanded="true"
+                       aria-controls="collapseOne">
+                        このサイトでできること
+                    </a>
+                </h5>
+            </div><!-- /.card-header -->
+            <div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne"
+                 data-parent="#accordion">
+                <div class="card-body">
+                    <p class="card-text">TTCアルゴリズムを用いた、複数人での物々交換（プレゼント交換など）の最適なマッチングができます。</p>
+                </div><!-- /.card-body -->
+            </div><!-- /.collapse -->
+        </div><!-- /.card -->
+        <div class="card">
+            <div class="card-header" role="tab" id="headingTwo">
+                <h5 class="mb-0">
+                    <a class="collapsed text-body" data-toggle="collapse" href="#collapseTwo" role="button"
+                       aria-expanded="false" aria-controls="collapseTwo">
+                        TTCアルゴリズムとは？
+                    </a>
+                </h5>
+            </div><!-- /.card-header -->
+            <div id="collapseTwo" class="collapse" role="tabpanel" aria-labelledby="headingTwo"
+                 data-parent="#accordion">
+                <div class="card-body">
+                    <p class="card-text">このサイトでは、TTC(Top Trading Cycle)アルゴリズムを用いてマッチングを行っています。<br>
+                        TTCアルゴリズムは、最良取引閉路を利用したアルゴリズムです。<br>
+                    <p class="card-text">
+                        ・個人合理性(効用の減る交換をする人がいない)<br>
+                        ・パレート効率性(これ以上誰かの効用を上げるには、他の誰かを犠牲にする必要がある)<br>
+                        ・耐戦略性(正直に選好を表明することが最適な戦略である)<br>
+                    </p>
+                    <p class="card-text">
+                        を満たす(強コア性を満たす)、唯一の配分をを知ることができます。<br>
+                    </p>
+                    <p class="card-text">
+                        TTCアルゴリズムのプロセス自体は単純で、以下のようなものです。<br>
+                    </p>
+                    <p class="card-text ml-2">
+
+                        ①参加者は、それぞれが現時点で1番ほしい財(を持っている人)を指さします。<br>
+                        ②必ず<a
+                            href="https://ja.wikipedia.org/wiki/%E9%96%89%E8%B7%AF%E3%82%B0%E3%83%A9%E3%83%95#%E6%9C%89%E5%90%91%E9%96%89%E8%B7%AF%E3%82%B0%E3%83%A9%E3%83%95"
+                            target="_blank">有向閉路</a>が1つ以上できるので、その有向閉路に含まれる人は、希望通りの交換をします。<br>
+                        ③参加者から、②で交換に参加した人たちを取り除きます。
+                        ④参加者が0人ならば終了します。そうで無いなら、残った参加者で①から再び実行します。
+                    </p>
+                    <p class="card-text">
+                        なお、有向閉路は1人でも成り立ちます。<br>
+                        よって、現時点で残っている財で最良のものを自分が持っている場合は、その人は交換をしない(自分と交換をする)ことになります。</p>
+                </div><!-- /.card-body -->
+            </div><!-- /.collapse -->
+        </div><!-- /.card -->
+        <div class="card">
+            <div class="card-header" role="tab" id="headingThree">
+                <h5 class="mb-0">
+                    <a class="collapsed text-body" data-toggle="collapse" href="#collapseThree" role="button"
+                       aria-expanded="false" aria-controls="collapseThree">
+                        このサイトを使うと起こること
+                    </a>
+                </h5>
+            </div><!-- /.card-header -->
+            <div id="collapseThree" class="collapse" role="tabpanel" aria-labelledby="headingThree"
+                 data-parent="#accordion">
+                <div class="card-body">
+                    <p class="card-text">
+                        ・プレゼント交換において、参加者が囚人のジレンマから解放される
+                    </p>
+                    <p class="card-text">
+                        従来プレゼント交換は、参加者に価値の高い財を提供するインセンティブが単体ではないため、各個人が合理的な選択を行うと価値のあるものが交換に出されず全体最適な状態とは言えませんでした。<br>
+                    </p>
+                    <p class="card-text">
+                        しかし、TTCアルゴリズムを用いて交換のマッチングを行うと、効用の低いものを掴まされるリスクが無くなります。<br>
+                        そのため、みんな安心して価値のあるものをプレゼント交換に供給できるようになります。
+                    </p>
+
+                </div><!-- /.card-body -->
+            </div><!-- /.collapse -->
+        </div><!-- /.card -->
+    </div><!-- /#accordion -->
+
+
+
 
 {% endblock %}

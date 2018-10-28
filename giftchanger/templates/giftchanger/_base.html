@@ -7,7 +7,7 @@
     <meta name="author" content="">
     <link rel="icon" href="">
 
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title %}TTC交換マッチング用サイト{% endblock %}</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
@@ -21,7 +21,7 @@
   <body>
 
     <nav class="navbar navbar-dark bg-dark">
-      <a class="navbar-brand" href="#">Never expand</a>
+      <a class="navbar-brand" href="">最適交換マッチング</a>
       <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarsExample01" aria-controls="navbarsExample01" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -29,26 +29,28 @@
       <div class="navbar-collapse collapse" id="navbarsExample01" style="">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
-            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+            <a class="nav-link" href="{% url 'giftchanger:top' %}">Home</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Link</a>
+            <li class="nav-item active">
+            <a class="nav-link" href="{% url 'giftchanger:event_register_view' %}">交換を主催する</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link disabled" href="#">Disabled</a>
+            <li class="nav-item active">
+            <a class="nav-link" href="{% url 'giftchanger:user_login' %}">交換に参加する</a>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
-            <div class="dropdown-menu" aria-labelledby="dropdown01">
-              <a class="dropdown-item" href="{% url 'giftchanger:event_register_view' %}">イベントを登録</a>
-              <a class="dropdown-item" href="{% url 'giftchanger:user_login' %}">イベントに参加</a>
-              <a class="dropdown-item" href="#">Something else here</a>
-            </div>
-          </li>
+
+{#          <li class="nav-item dropdown">#}
+{#            <a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">イベントを主催</a>#}
+{#            <div class="dropdown-menu" aria-labelledby="dropdown01">#}
+{#              <a class="dropdown-item" href="{% url 'giftchanger:event_register_view' %}">イベントを登録</a>#}
+{#              <a class="dropdown-item" href="{% url 'giftchanger:user_login' %}">イベントに参加</a>#}
+{#              <a class="dropdown-item" href="#">Something else here</a>#}
+{#            </div>#}
+{#          </li>#}
+
         </ul>
-        <form class="form-inline my-2 my-md-0">
-          <input class="form-control" placeholder="Search" aria-label="Search" type="text">
-        </form>
+{#        <form class="form-inline my-2 my-md-0">#}
+{#          <input class="form-control" placeholder="Search" aria-label="Search" type="text">#}
+{#        </form>#}
       </div>
     </nav>
 
