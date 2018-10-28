@@ -54,6 +54,25 @@ def admin_register_post(request):
     return HttpResponseRedirect(reverse("giftchanger:register_completed", args=(event.event_id,)))
 
 
+def admin_edit_post(request, pk):
+    event = Event.objects.get(event_id=pk)
+
+    event.show_name_before_match = True if request.POST["show_name_before"] == "true" else False
+    event.show_name_after_match = True if request.POST["show_name_after"] == "true" else False
+    event.email = request.POST["email"]
+    event.password = request.POST["password"]
+    event.event_name = request.POST["event_name"]
+    event.event_date = request.POST["event_date"]
+    event.number_of_gifts = request.POST["number_of_gifts"]
+
+    event.allow_picture = False if request.POST["allow_picture"] == "false" else True
+    event.force_picture = True if request.POST["allow_picture"] == "always" else False
+
+    event.save()
+    print(event.event_id)
+    return HttpResponseRedirect(reverse("giftchanger:register_completed", args=(event.event_id,)))
+
+
 class AdminEditView(generic.DetailView):
     model = Event
     template_name = "giftchanger/admin_edit.html"
@@ -118,9 +137,9 @@ def ttc_result_post(request, pk):
 
             for list1 in result_list:
                 for i in range(len(list1)):
-                    list1[i] = str(list1[i]).replace(",", " → ")
+                    list1[i] = json.dumps(list1[i], ensure_ascii=False, separators=('→', ':'))
 
-            result_str = json.dumps(result_list[0], ensure_ascii=False).replace('"', "").replace("'", "")
+            result_str = json.dumps(result_list, ensure_ascii=False).replace("\\", "").replace('"', "")
 
             event.result = result_str
             event.save()
@@ -136,6 +155,22 @@ class EventResultView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         result_str = context["event"].result
         context["result"] = result_str
+
+        gifts = Gift.objects.filter(parent_event=context["event"])
+
+        gift_registered_num = len(gifts)
+        gift_finished_num = len(gifts.exclude(gift_title__exact=""))
+
+        if gift_registered_num == context["event"].number_of_gifts:
+            available_bool = True
+            for gift in gifts:
+                available_bool = available_bool and gift.preference_list_str
+            context['match_available'] = available_bool
+        else:
+            context["match_available"] = False
+
+        context["gift_registered_num"] = gift_registered_num
+        context["gift_finished_num"] = gift_finished_num
 
         return context
 

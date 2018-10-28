@@ -25,7 +25,7 @@ SECRET_KEY = '@i%*pfp=zx@9$mc8_o$5!!vp*jnr5lm$2nm0e5ebr+7u)7nymu'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", ]
+ALLOWED_HOSTS = ["127.0.0.1", "piyo-220609.appspot.com" ]
 
 
 # Application definition
@@ -76,16 +76,16 @@ WSGI_APPLICATION = 'ttcgiftchanger.wsgi.application'
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 # [START dbconfig]
-if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine'):
+if os.getenv('GAE_INSTANCE'):
     # Running on production App Engine, so connect to Google Cloud SQL using
     # the unix socket at /cloudsql/<your-cloudsql-connection string>
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'HOST': '/cloudsql/<your-cloudsql-connection-string>',
-            'NAME': 'giftchanger',
-            'USER': '<your-database-user>',
-            'PASSWORD': '<your-database-password>',
+            'HOST': '/cloudsql/piyo-220609:asia-northeast1:ttc-mysql',
+            'NAME': 'ttc',
+            'USER': 'ttcuser',
+            'PASSWORD': 'piyopiyopiyo123',
         }
     }
 else:
@@ -100,9 +100,9 @@ else:
             'ENGINE': 'django.db.backends.mysql',
             'HOST': '127.0.0.1',
             'PORT': '3306',
-            'NAME': 'giftchanger',
-            'USER': '<your-database-user>',
-            'PASSWORD': '<your-database-password>',
+            'NAME': 'ttc',
+            'USER': 'ttcuser',
+            'PASSWORD': 'piyopiyopiyo123',
         }
     }
 # [END dbconfig]

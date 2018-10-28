@@ -1,9 +1,10 @@
 {% extends "giftchanger/_base.html" %}
 {% block title %}ほかの参加者を待機中{% endblock %}
 {% block main %}
+    <h2>選好入力画面 - 待機中</h2>
+    <div>ほかの参加者が情報を入力するのを待っています。<br>
+    今しばらくお待ちください。</div>
     <div class="col-12">参加者予定数: {{ event.number_of_gifts }}人</div>
     <div class="col-12">参加登録済み: {{ gift_registered_num }}人</div>
     <div class="col-12">プレゼント登録済み: {{ gift_finished_num }}人</div>
-    <div>現在ほかの参加者を待っています。<br>
-    今しばらくお待ちください。</div>
 {% endblock %}

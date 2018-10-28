@@ -10,7 +10,7 @@ handlers:
   script: ttcgiftchanger.wsgi.application
 
 beta_settings:
-    cloud_sql_instances: <INSTANCE_CONNECTION_NAME>
+    cloud_sql_instances: piyo-220609:asia-northeast1:ttc-mysql
 
 automatic_scaling:
   min_instances: 0
