@@ -2,4 +2,4 @@
 TTC gift changer with django
 
 Templates are written in Japanese.
-Lisenced under GNU Version 3.
+Lisenced under GNU General Public Lisence Version 3.
