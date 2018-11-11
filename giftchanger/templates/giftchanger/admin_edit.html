@@ -63,7 +63,7 @@
         <label><input type="radio" name="show_name_after" id="show_name_after" value="false"{% if not event.show_name_after_match %} checked{% endif %}>表示しない</label>
         <br>
 <span>
-        <label for="event_name">※準備中のため写真は投稿できません。<br>写真投稿：</label>
+        <label for="event_name">写真投稿：</label>
         <label><input type="radio" name="allow_picture" id="allow_picture" value="true"{% if event.allow_picture and not event.force_picture %} checked{% endif %}>許可する</label>
         <label><input type="radio" name="allow_picture" id="allow_picture" value="false"{% if not event.allow_picture %} checked{% endif %}>許可しない</label>
         <label><input type="radio" name="allow_picture" id="allow_picture" value="always"{% if event.allow_picture and event.force_picture %} checked{% endif %}>強制</label>

@@ -3,10 +3,10 @@
 {% block title %}イベントを登録{% endblock %}
 {% block main %}
     <h2 class="col-12">登録完了！</h2>
-    <div class="col-12">以下のURLを保存し、参加者に参加者用URLを配信してください。</div>
+    <div class="col-12">以下のURLを保存し、参加者に参加者用URLを伝えてください。</div>
     <div class="col-12">イベント管理用URL: <a href="{{ request.scheme }}://{{ request.get_host }}{% url "giftchanger:admin_edit" event.event_id %}">{{ request.scheme }}://{{ request.get_host }}{% url "giftchanger:admin_edit" event.event_id %}</a></div>
     <div class="col-12">参加者用URL: <a href="{{ request.scheme }}://{{ request.get_host }}{% url "giftchanger:user_login_confirm" event.event_id %}">{{ request.scheme }}://{{ request.get_host }}{% url "giftchanger:user_login_confirm" event.event_id %}</a></div>
-    <div class="col-12">プレゼントの個数: {{ event.number_of_gifts }}個</div>
+    <div class="col-12">参加定員: {{ event.number_of_gifts }}人</div>
 
 
 {% endblock %}
