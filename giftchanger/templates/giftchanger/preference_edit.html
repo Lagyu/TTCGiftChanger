@@ -199,6 +199,7 @@
 
                     const modal_dialog = document.createElement("div");
                     modal_dialog.setAttribute("class", "modal-dialog");
+                    modal_dialog.setAttribute("style", "z-index: 1500");
                     modal_dialog.setAttribute("role", "document");
 
                     const modal_content = document.createElement("div");
@@ -236,7 +237,9 @@
                     modal_body.setAttribute("class", "modal-body");
                     const modal_body_paragraph = document.createElement("p");
                     const modal_body_text = document.createTextNode(gift_data_dict["description"]);
-                    modal_body_paragraph.appendChild(modal_body_text);
+                    const modal_body_pre = document.createElement("pre");
+                    modal_body_pre.appendChild(modal_body_text);
+                    modal_body_paragraph.appendChild(modal_body_pre);
                     modal_body.appendChild(modal_body_paragraph);
 
                     if (gift_data_dict["img_url"].indexOf("://") !== -1){
@@ -454,6 +457,7 @@
 
                     const modal_dialog = document.createElement("div");
                     modal_dialog.setAttribute("class", "modal-dialog");
+                    modal_dialog.setAttribute("style", "z-index: 1500");
                     modal_dialog.setAttribute("role", "document");
 
                     const modal_content = document.createElement("div");
@@ -491,7 +495,9 @@
                     modal_body.setAttribute("class", "modal-body");
                     const modal_body_paragraph = document.createElement("p");
                     const modal_body_text = document.createTextNode(gift_data_dict["description"]);
-                    modal_body_paragraph.appendChild(modal_body_text);
+                    const modal_body_pre = document.createElement("pre");
+                    modal_body_pre.appendChild(modal_body_text);
+                    modal_body_paragraph.appendChild(modal_body_pre);
                     modal_body.appendChild(modal_body_paragraph);
 
                     if (gift_data_dict["img_url"].indexOf("://") !== -1){
