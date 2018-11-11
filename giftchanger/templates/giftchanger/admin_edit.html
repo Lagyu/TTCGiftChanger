@@ -58,10 +58,12 @@
         <label><input type="radio" name="show_name_before" id="show_name_before" value="false"{% if not event.show_name_before_match %} checked{% endif %}>表示しない</label>
         <br>
 
+    <span hidden>
         <label for="event_name">名前の表示（マッチング後）</label>
-        <label><input type="radio" name="show_name_after" id="show_name_after" value="true"{% if event.show_name_after_match %} checked{% endif %}>表示する</label>
-        <label><input type="radio" name="show_name_after" id="show_name_after" value="false"{% if not event.show_name_after_match %} checked{% endif %}>表示しない</label>
+        <label><input type="radio" name="show_name_after" id="show_name_after" value="true" checked>表示する</label>
+        <label><input type="radio" name="show_name_after" id="show_name_after" value="false">表示しない</label>
         <br>
+</span>
 <span>
         <label for="event_name">写真投稿：</label>
         <label><input type="radio" name="allow_picture" id="allow_picture" value="true"{% if event.allow_picture and not event.force_picture %} checked{% endif %}>許可する</label>
