@@ -2,8 +2,9 @@
 
 {% block title %}提供するものを登録{% endblock %}
 {% block main %}
-    <h2 class="col-12">プレゼント登録・編集画面</h2>
-    <form action="{% url 'giftchanger:edit_gift_post' gift.parent_event.event_id gift.id %}" method="post" enctype="multipart/form-data">
+    <h2 class="col-12">プレゼント登録・編集</h2>
+    <form action="{% url 'giftchanger:edit_gift_post' gift.parent_event.event_id gift.id %}" method="post"
+          enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-label-group">
             <label for="gift_title">プレゼントのタイトル</label>
@@ -16,59 +17,127 @@
                       placeholder="プレゼントの詳細(1000文字まで)" rows="10" required>{{ gift.gift_description }}</textarea>
         </div>
         {% if gift.image_url %}
-        <div class="form-label-group">
-            <img class="img-fluid" src={{ gift.image_url }} referrerpolicy="no-referrer" />
-        </div>
+            <div class="form-label-group">
+                <img class="img-fluid" src={{ gift.image_url }} referrerpolicy="no-referrer"/>
+            </div>
 
         {% endif %}
 
-        {{ image_form }}
+
+
+
+        <div class="form-group">
+            <label for="file">画像</label>
+            <div id="file" class="input-group">
+                <div class="custom-file">
+                    {{ image_form }}
+                    <label class="custom-file-label" for="{{ image_form.name }}">{{ image_form.label }}</label>
+                </div>
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary reset">取消</button>
+                </div>
+            </div>
+        </div>
+        <style>
+            .custom-file-input:lang(ja) ~ .custom-file-label::after {
+                content: "参照";
+            }
+
+            .custom-file {
+                overflow: hidden;
+            }
+
+            .custom-file-label {
+                white-space: nowrap;
+            }
+        </style>
+
+        <script>
+            window.onload = function(){
+                $('.custom-file-input').on('change', handleFileSelect);
+
+            function handleFileSelect(evt) {
+                $('#preview').remove();// 繰り返し実行時の処理
+                $(this).parents('.input-group').after('<div id="preview"></div>');
+                const files = evt.target.files;
+
+                for (let i = 0, f; f = files[i]; i++) {
+
+                    const reader = new FileReader();
+
+                    reader.onload = (function (theFile) {
+                        return function (e) {
+                            if (theFile.type.match('image.*')) {
+                                var $html = ['<div class="d-inline-block mr-1 mt-1"><img class="img-thumbnail img-fluid" src="', e.target.result, '" title="', encodeURI(theFile.name), '" /></div>'].join('');// 画像では画像のプレビューとファイル名の表示
+                            } else {
+                                var $html = ['<div class="d-inline-block mr-1"><span class="small">', theFile.name, '</span></div>'].join('');//画像以外はファイル名のみの表示
+                            }
+
+                            $('#preview').append($html);
+                        };
+                    })(f);
+
+                    reader.readAsDataURL(f);
+                }
+
+                $(this).next('.custom-file-label').html($(this)[0].files[0].name);
+            }
+
+            //ファイルの取消
+            $('.reset').click(function () {
+                $(this).parent().prev().children('.custom-file-label').html('ファイル選択...');
+                $('.custom-file-input').val('');
+                $('#preview').remove('');
+            })
+            }
+
+        </script>
         <br>
 
-{#         画像アップロードここから#}
-{#        <div class="imagePreview">#}
-{#             ここに画像プレビューが表示される#}
-{#        </div>#}
-{#        <div class="input-group">#}
-{#            <label class="input-group-btn">#}
-{#        <span class="btn btn-primary">#}
-{#            Choose File<input type="file" style="display:none" class="uploadFile" name="image">#}
-{#        </span>#}
-{#            </label>#}
-{#            <input type="text" class="form-control" readonly="">#}
-{#        </div>#}
-{##}
-{#        <style>#}
-{#            .imagePreview {#}
-{#                width: 100%;#}
-{#                height: 180px;#}
-{#                background-position: center center;#}
-{#                background-size: cover;#}
-{#                -webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, .3);#}
-{#                display: inline-block;#}
-{#            }#}
-{#        </style>#}
-{##}
-{#        <script>#}
-{#            window.onload = function() {#}
-{#                $(document).on('change', ':file', function () {#}
-{#                    var input = $(this),#}
-{#                        numFiles = input.get(0).files ? input.get(0).files.length : 1,#}
-{#                        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');#}
-{#                    input.parent().parent().next(':text').val(label);#}
-{##}
-{#                    var files = !!this.files ? this.files : [];#}
-{#                    if (!files.length || !window.FileReader) return; // no file selected, or no FileReader support#}
-{#                    if (/^image/.test(files[0].type)) { // only image file#}
-{#                        var reader = new FileReader(); // instance of the FileReader#}
-{#                        reader.readAsDataURL(files[0]); // read the local file#}
-{#                        reader.onloadend = function () { // set image data as background of div#}
-{#                            input.parent().parent().parent().prev('.imagePreview').css("background-image", "url(" + this.result + ")");#}
-{#                        }#}
-{#                    }#}
-{#                });#}
-{#            };#}
-{#        </script>#}
+        {#         画像アップロードここから#}
+        {#        <div class="imagePreview">#}
+        {#             ここに画像プレビューが表示される#}
+        {#        </div>#}
+        {#        <div class="input-group">#}
+        {#            <label class="input-group-btn">#}
+        {#        <span class="btn btn-primary">#}
+        {#            Choose File<input type="file" style="display:none" class="uploadFile" name="image">#}
+        {#        </span>#}
+        {#            </label>#}
+        {#            <input type="text" class="form-control" readonly="">#}
+        {#        </div>#}
+        {##}
+        {#        <style>#}
+        {#            .imagePreview {#}
+        {#                width: 100%;#}
+        {#                height: 180px;#}
+        {#                background-position: center center;#}
+        {#                background-size: cover;#}
+        {#                -webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, .3);#}
+        {#                display: inline-block;#}
+        {#            }#}
+        {#        </style>#}
+        {##}
+        {#        <script>#}
+        {#            window.onload = function() {#}
+        {#                $(document).on('change', ':file', function () {#}
+        {#                    var input = $(this),#}
+        {#                        numFiles = input.get(0).files ? input.get(0).files.length : 1,#}
+        {#                        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');#}
+        {#                    input.parent().parent().next(':text').val(label);#}
+        {##}
+        {#                    var files = !!this.files ? this.files : [];#}
+        {#                    if (!files.length || !window.FileReader) return; // no file selected, or no FileReader support#}
+        {#                    if (/^image/.test(files[0].type)) { // only image file#}
+        {#                        var reader = new FileReader(); // instance of the FileReader#}
+        {#                        reader.readAsDataURL(files[0]); // read the local file#}
+        {#                        reader.onloadend = function () { // set image data as background of div#}
+        {#                            input.parent().parent().parent().prev('.imagePreview').css("background-image", "url(" + this.result + ")");#}
+        {#                        }#}
+        {#                    }#}
+        {#                });#}
+        {#            };#}
+        {#        </script>#}
         {# 画像アップロードここまで #}
 
         <button class="btn btn-primary">保存して、選好入力画面へ</button>

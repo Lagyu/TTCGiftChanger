@@ -7,11 +7,18 @@ import random
 
 
 class ImageFormRequired(forms.Form):
-    image = forms.ImageField()
+    image = forms.ImageField(label="ファイル選択...",
+                             widget=forms.FileInput(
+                                 attrs={'class': 'custom-file-input',
+                                        "lang": "ja"}))
 
 
 class ImageFormElective(forms.Form):
-    image = forms.ImageField(required=False)
+    image = forms.ImageField(required=False,
+                             label="ファイル選択...",
+                             widget=forms.FileInput(
+                                 attrs={'class': 'custom-file-input',
+                                        "lang": "ja"}))
 
 
 class NoImageForm(forms.Form):
@@ -35,4 +42,3 @@ def imgur_uploader(image_file, name="image", content_type=None):
 
     else:
         return res_dict
-
