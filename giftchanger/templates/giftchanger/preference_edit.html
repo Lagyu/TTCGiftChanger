@@ -238,6 +238,17 @@
                     const modal_body_text = document.createTextNode(gift_data_dict["description"]);
                     modal_body_paragraph.appendChild(modal_body_text);
                     modal_body.appendChild(modal_body_paragraph);
+
+                    if (gift_data_dict["img_url"].indexOf("://") !== -1){
+
+                        const modal_body_image = document.createElement("img");
+                        modal_body_image.setAttribute("src", gift_data_dict["img_url"]);
+                        modal_body_image.setAttribute("class", "img-fluid");
+                        modal_body_image.setAttribute("referrerpolicy", "no-referrer");
+                        modal_body.appendChild(modal_body_image);
+
+                    }
+
                     modal_content.appendChild(modal_body);
 
                     const modal_footer = document.createElement("div");
@@ -482,6 +493,17 @@
                     const modal_body_text = document.createTextNode(gift_data_dict["description"]);
                     modal_body_paragraph.appendChild(modal_body_text);
                     modal_body.appendChild(modal_body_paragraph);
+
+                    if (gift_data_dict["img_url"].indexOf("://") !== -1){
+
+                        const modal_body_image = document.createElement("img");
+                        modal_body_image.setAttribute("src", gift_data_dict["img_url"]);
+                        modal_body_image.setAttribute("class", "img-fluid");
+                        modal_body_image.setAttribute("referrerpolicy", "no-referrer");
+                        modal_body.appendChild(modal_body_image);
+
+                    }
+
                     modal_content.appendChild(modal_body);
 
                     const modal_footer = document.createElement("div");

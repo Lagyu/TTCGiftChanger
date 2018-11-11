@@ -3,18 +3,75 @@
 {% block title %}提供するものを登録{% endblock %}
 {% block main %}
     <h2 class="col-12">プレゼント登録・編集画面</h2>
-    <form action="{% url 'giftchanger:edit_gift_post' gift.parent_event.event_id gift.id %}" method="post">
+    <form action="{% url 'giftchanger:edit_gift_post' gift.parent_event.event_id gift.id %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-label-group">
             <label for="gift_title">プレゼントのタイトル</label>
             <input id="gift_title" name="gift_title" class="form-control" placeholder="プレゼントのタイトル" required=""
                    autofocus="" value="{{ gift.gift_title }}" type="text">
         </div>
-            <div class="form-label-group">
+        <div class="form-label-group">
             <label for="gift_description">プレゼントの詳細(1000文字まで)</label>
-                <textarea id="gift_description" name="gift_description" class="form-control" placeholder="プレゼントの詳細(1000文字まで)" rows="10" required>{{ gift.gift_description }}</textarea>
+            <textarea id="gift_description" name="gift_description" class="form-control"
+                      placeholder="プレゼントの詳細(1000文字まで)" rows="10" required>{{ gift.gift_description }}</textarea>
         </div>
-    <button class="btn btn-primary">保存して、選好入力画面へ</button>
+        {% if gift.image_url %}
+        <div class="form-label-group">
+            <img class="img-fluid" src={{ gift.image_url }} referrerpolicy="no-referrer" />
+        </div>
+
+        {% endif %}
+
+        {{ image_form }}
+        <br>
+
+{#         画像アップロードここから#}
+{#        <div class="imagePreview">#}
+{#             ここに画像プレビューが表示される#}
+{#        </div>#}
+{#        <div class="input-group">#}
+{#            <label class="input-group-btn">#}
+{#        <span class="btn btn-primary">#}
+{#            Choose File<input type="file" style="display:none" class="uploadFile" name="image">#}
+{#        </span>#}
+{#            </label>#}
+{#            <input type="text" class="form-control" readonly="">#}
+{#        </div>#}
+{##}
+{#        <style>#}
+{#            .imagePreview {#}
+{#                width: 100%;#}
+{#                height: 180px;#}
+{#                background-position: center center;#}
+{#                background-size: cover;#}
+{#                -webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, .3);#}
+{#                display: inline-block;#}
+{#            }#}
+{#        </style>#}
+{##}
+{#        <script>#}
+{#            window.onload = function() {#}
+{#                $(document).on('change', ':file', function () {#}
+{#                    var input = $(this),#}
+{#                        numFiles = input.get(0).files ? input.get(0).files.length : 1,#}
+{#                        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');#}
+{#                    input.parent().parent().next(':text').val(label);#}
+{##}
+{#                    var files = !!this.files ? this.files : [];#}
+{#                    if (!files.length || !window.FileReader) return; // no file selected, or no FileReader support#}
+{#                    if (/^image/.test(files[0].type)) { // only image file#}
+{#                        var reader = new FileReader(); // instance of the FileReader#}
+{#                        reader.readAsDataURL(files[0]); // read the local file#}
+{#                        reader.onloadend = function () { // set image data as background of div#}
+{#                            input.parent().parent().parent().prev('.imagePreview').css("background-image", "url(" + this.result + ")");#}
+{#                        }#}
+{#                    }#}
+{#                });#}
+{#            };#}
+{#        </script>#}
+        {# 画像アップロードここまで #}
+
+        <button class="btn btn-primary">保存して、選好入力画面へ</button>
     </form>
 
 

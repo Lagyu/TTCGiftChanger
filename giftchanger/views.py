@@ -8,9 +8,13 @@ import uuid
 from .ttc_cycle import ttc_algorithm
 import os
 import json
-
 from django.urls import reverse, resolve
 from django.views import generic
+
+from .forms import ImageFormRequired, ImageFormElective, NoImageForm, imgur_uploader
+from django import forms
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 
 
 def admin_register_view(request):
@@ -203,13 +207,26 @@ def create_user_post(request, event_id):
 
 
 def edit_gift_post(request, event_id, pk):
-    event = Event.objects.get(event_id=event_id)
+    event = Event.objects.get(
+        event_id=event_id
+    )
     gift = Gift.objects.get(
         parent_event=event,
         id=pk,
     )
     gift.gift_title = request.POST["gift_title"]
     gift.gift_description = request.POST["gift_description"]
+
+    form = ImageFormRequired(request.POST, request.FILES)
+
+    if form.is_valid():
+        upload_result = imgur_uploader(request.FILES["image"].read(), request.FILES["image"].name, request.FILES["image"].content_type)
+
+        if isinstance(upload_result, str):
+            gift.image_url = upload_result
+        else:
+            pass
+
     gift.save()
     return HttpResponseRedirect(reverse("giftchanger:edit_preferences_check", args=(event_id, gift.id)))
 
@@ -217,6 +234,17 @@ def edit_gift_post(request, event_id, pk):
 class GiftEditView(generic.DetailView):
     model = Gift
     template_name = "giftchanger/gift_edit.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if context["gift"].parent_event.allow_picture:
+            if context["gift"].parent_event.force_picture:
+                context["image_form"] = ImageFormRequired()
+            else:
+                context["image_form"] = ImageFormElective()
+        else:
+            context["image_form"] = NoImageForm()
+        return context
 
 
 def preference_edit_check(request, event_id, pk):
@@ -237,7 +265,8 @@ def preference_edit(request, event_id, pk):
     # create json to send and store in the LocalStorage.
     gifts_json = json.dumps([{'key': gift.id,
                               'value': {"title": gift.gift_title, "name": gift.user_name,
-                                        "description": gift.gift_description}}
+                                        "description": gift.gift_description,
+                                        "img_url": gift.image_url if gift.image_url else ""}}
                              for gift in gifts_list], separators=(',', ':'))
     context = {"gifts_json": gifts_json, "event_id": event_id, "gift_id": pk, "show_name": parent_event.show_name_before_match, "number_of_gifts": parent_event.number_of_gifts}
     response = render(request, "giftchanger/preference_edit.html", context)

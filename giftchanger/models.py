@@ -25,6 +25,6 @@ class Gift(models.Model):
     gift_description = models.CharField(max_length=1000, default="")
     preference_list_str = models.CharField(max_length=10000, default="")
     not_selected_list_str = models.CharField(max_length=10000, default="")
-
+    image_url = models.CharField(max_length=100, null=True)
 
 
