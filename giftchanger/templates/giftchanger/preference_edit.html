@@ -44,13 +44,14 @@
     </div>
 
     <form onsubmit="return false;" id="save_form" method="post">
-    {% csrf_token %}
-    <nav class="navbar fixed-bottom navbar-expand-sm navbar-dark bg-dark">
-        <button class="btn btn-secondary col-sm-6 mx-1" id="save_button">保存する</button>
-        <a class="btn btn-secondary col-sm-6 mx-1" href="{% url 'giftchanger:edit_gift' event_id gift_id %}">自分のに戻る</a>
-    </nav>
+        {% csrf_token %}
+        <nav class="navbar fixed-bottom navbar-expand-sm navbar-dark bg-dark">
+            <button class="btn btn-secondary col-sm-6 mx-1" id="save_button">保存する</button>
+            <a class="btn btn-secondary col-sm-6 mx-1"
+               href="{% url 'giftchanger:edit_gift' event_id gift_id %}">自分のに戻る</a>
+        </nav>
 
-        </form>
+    </form>
     <script>
         const objects =
         {{ gifts_json|safe }}{# Not escape for the data will only be used in the client. #}
@@ -64,13 +65,13 @@
 
         class setSelected {
             updateCookie(data) {
-                document.cookie = "selected_preference_list_{{ event_id|safe }}_{{ gift_id|safe }}=" + JSON.stringify(data).replace(/,/g, "\\054")+";path=/";
+                document.cookie = "selected_preference_list_{{ event_id|safe }}_{{ gift_id|safe }}=" + JSON.stringify(data).replace(/,/g, "\\054") + ";path=/";
             }
         }
 
         class setNotSelected {
             updateCookie(data) {
-                document.cookie = "not_selected_preference_list_{{ event_id|safe }}_{{ gift_id|safe }}=" + JSON.stringify(data).replace(/,/g, "\\054")+";path=/";
+                document.cookie = "not_selected_preference_list_{{ event_id|safe }}_{{ gift_id|safe }}=" + JSON.stringify(data).replace(/,/g, "\\054") + ";path=/";
             }
         }
 
@@ -101,11 +102,11 @@
                 this._data = value;
                 this.notify(JSON.stringify(value));
                 this.refresh();
-                if (this._data.length === {{ number_of_gifts }}){
+                if (this._data.length === {{ number_of_gifts }}) {
                     console.log("save_enable fire");
                     const save_button = document.getElementById("save_button");
                     save_button.className = "btn btn-primary col-sm-6 mx-1";
-                    const save_form =document.getElementById("save_form");
+                    const save_form = document.getElementById("save_form");
                     save_form.removeAttribute("onsubmit");
                     save_form.setAttribute("action", "{% url "giftchanger:post_preferences" event_id gift_id %}")
                 }
@@ -187,15 +188,15 @@
                     const title_link = document.createElement("a");
                     title_link.setAttribute("href", "");
                     title_link.setAttribute("data-toggle", "modal");
-                    const modal_id = "modalID"+gift_id;
-                    title_link.setAttribute("data-target", "#"+modal_id);
+                    const modal_id = "modalID" + gift_id;
+                    title_link.setAttribute("data-target", "#" + modal_id);
 
                     const modal = document.createElement("div");
                     modal.setAttribute("class", "modal fade");
                     modal.setAttribute("id", modal_id);
                     modal.setAttribute("tabindex", "-1");
                     modal.setAttribute("role", "-dialog");
-                    modal.setAttribute("aria-labelledby", "modalContainerFor"+gift_id);
+                    modal.setAttribute("aria-labelledby", "modalContainerFor" + gift_id);
 
                     const modal_dialog = document.createElement("div");
                     modal_dialog.setAttribute("class", "modal-dialog");
@@ -210,7 +211,7 @@
 
                     const modal_title = document.createElement("h5");
                     modal_title.setAttribute("class", "modal-title");
-                    modal_title.setAttribute("id", "modalTitleFor"+gift_id);
+                    modal_title.setAttribute("id", "modalTitleFor" + gift_id);
                     const modal_title_text = document.createTextNode(gift_data_dict["title"]);
                     modal_title.appendChild(modal_title_text);
 
@@ -242,7 +243,7 @@
                     modal_body_paragraph.appendChild(modal_body_pre);
                     modal_body.appendChild(modal_body_paragraph);
 
-                    if (gift_data_dict["img_url"].indexOf("://") !== -1){
+                    if (gift_data_dict["img_url"].indexOf("://") !== -1) {
 
                         const modal_body_image = document.createElement("img");
                         modal_body_image.setAttribute("src", gift_data_dict["img_url"]);
@@ -272,13 +273,16 @@
 
                     modal.appendChild(modal_dialog);
 
-
+                    const modal_mover = document.createElement("script");
+                    const script_text = document.createTextNode('$("#' + modal_id + '").on("show.bs.modal",function(event){$("#' + modal_id + '").appendTo(document.body)});$("#' + modal_id + '").on("hidden.bs.modal",function(event){$("' + modal_id + '").appendTo(gift_tr)});');
+                    modal_mover.appendChild(script_text);
 
                     const title_text = document.createTextNode(gift_data_dict["title"]);
                     title_link.appendChild(title_text);
                     td_title.appendChild(title_link);
                     gift_tr.appendChild(td_title);
                     gift_tr.appendChild(modal);
+                    gift_tr.appendChild(modal_mover);
 
                     const td_name = document.createElement("td");
                     {% if not show_name %}
@@ -440,20 +444,20 @@
                     td_gift_id.appendChild(gift_id_text);
                     gift_tr.appendChild(td_gift_id);
 
-                                        const td_title = document.createElement("td");
+                    const td_title = document.createElement("td");
 
                     const title_link = document.createElement("a");
                     title_link.setAttribute("href", "");
                     title_link.setAttribute("data-toggle", "modal");
-                    const modal_id = "modalID"+gift_id;
-                    title_link.setAttribute("data-target", "#"+modal_id);
+                    const modal_id = "modalID" + gift_id;
+                    title_link.setAttribute("data-target", "#" + modal_id);
 
                     const modal = document.createElement("div");
                     modal.setAttribute("class", "modal fade");
                     modal.setAttribute("id", modal_id);
                     modal.setAttribute("tabindex", "-1");
                     modal.setAttribute("role", "-dialog");
-                    modal.setAttribute("aria-labelledby", "modalContainerFor"+gift_id);
+                    modal.setAttribute("aria-labelledby", "modalContainerFor" + gift_id);
 
                     const modal_dialog = document.createElement("div");
                     modal_dialog.setAttribute("class", "modal-dialog");
@@ -468,7 +472,7 @@
 
                     const modal_title = document.createElement("h5");
                     modal_title.setAttribute("class", "modal-title");
-                    modal_title.setAttribute("id", "modalTitleFor"+gift_id);
+                    modal_title.setAttribute("id", "modalTitleFor" + gift_id);
                     const modal_title_text = document.createTextNode(gift_data_dict["title"]);
                     modal_title.appendChild(modal_title_text);
 
@@ -500,7 +504,7 @@
                     modal_body_paragraph.appendChild(modal_body_pre);
                     modal_body.appendChild(modal_body_paragraph);
 
-                    if (gift_data_dict["img_url"].indexOf("://") !== -1){
+                    if (gift_data_dict["img_url"].indexOf("://") !== -1) {
 
                         const modal_body_image = document.createElement("img");
                         modal_body_image.setAttribute("src", gift_data_dict["img_url"]);
@@ -530,13 +534,16 @@
 
                     modal.appendChild(modal_dialog);
 
-
+                    const modal_mover = document.createElement("script");
+                    const script_text = document.createTextNode('$("#' + modal_id + '").on("show.bs.modal",function(event){$("#' + modal_id + '").appendTo(document.body)});$("#' + modal_id + '").on("hidden.bs.modal",function(event){$("' + modal_id + '").appendTo(gift_tr)});');
+                    modal_mover.appendChild(script_text);
 
                     const title_text = document.createTextNode(gift_data_dict["title"]);
                     title_link.appendChild(title_text);
                     td_title.appendChild(title_link);
                     gift_tr.appendChild(td_title);
                     gift_tr.appendChild(modal);
+                    gift_tr.appendChild(modal_mover);
 
                     const td_name = document.createElement("td");
                     {% if not show_name %}
